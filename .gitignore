@@ -1,0 +1,7 @@
+__pycache__/
+.env
+data/
+outputs/
+mimic-cxr-chexpert/
+mimic-cxr-negbio/
+mimic-cxr-reports/

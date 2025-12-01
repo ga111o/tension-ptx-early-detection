@@ -1,0 +1,85 @@
+model_type: "xgboost"
+enabled: true
+
+default_params:
+  n_estimators: 300
+  max_depth: 4
+  learning_rate: 0.05
+  subsample: 0.8
+  colsample_bytree: 0.8
+  min_child_weight: 3
+  gamma: 0.1
+  reg_alpha: 0.1
+  reg_lambda: 1.0
+  objective: "binary:logistic"
+  eval_metric: "auc"
+  early_stopping_rounds: 30
+
+optuna_range:
+  n_estimators:
+    type: "int"
+    min: 100
+    max: 500
+    step: null
+  
+  max_depth:
+    type: "int"
+    min: 4
+    max: 7
+    step: null
+  
+  learning_rate:
+    type: "float"
+    min: 0.01
+    max: 0.2
+    log: true
+  
+  subsample:
+    type: "float"
+    min: 0.6
+    max: 1.0
+    log: false
+  
+  colsample_bytree:
+    type: "float"
+    min: 0.6
+    max: 1.0
+    log: false
+  
+  min_child_weight:
+    type: "int"
+    min: 1
+    max: 7
+    step: null
+  
+  gamma:
+    type: "float"
+    min: 0.0
+    max: 1.0
+    log: false
+  
+  reg_alpha:
+    type: "float"
+    min: 0.1
+    max: 10.0
+    log: true
+  
+  reg_lambda:
+    type: "float"
+    min: 0.1
+    max: 10.0
+    log: true
+  
+  pos_weight_multiplier:
+    type: "float"
+    min: 5.0
+    max: 25.0
+    log: false
+
+gpu:
+  tree_method: "hist"
+  device: "cuda"
+
+cpu:
+  tree_method: "hist"
+  n_jobs: -1

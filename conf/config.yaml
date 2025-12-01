@@ -1,0 +1,68 @@
+defaults:
+  - _self_
+  - model: xgboost
+  - optuna: default
+
+data:
+  features_path: "data/features_preprocessed.csv"
+  output_dir: "data"
+  meta_cols:
+    - subject_id
+    - hadm_id
+    - label
+    - cohort_type
+    - group_label
+    - ref_time
+    - window_start
+
+pipeline:
+  n_folds: 5
+  resampling_method: "none"
+  use_cost_sensitive: true
+  use_gpu: false
+  target_recall: 0.8
+  threshold_method: "f1"
+  random_seed: 42
+
+resampling:
+  smote:
+    k_neighbors: 5
+  adasyn:
+    n_neighbors: 5
+
+imputer:
+  strategy: "median"
+  iterative:
+    max_iter: 10
+
+threshold:
+  default: 0.5
+
+feature_importance:
+  top_n: 20
+
+optuna:
+  n_trials: 100
+  timeout: null
+  n_jobs: 1
+  sampler:
+    type: "TPESampler"
+    seed: 42
+  pruner:
+    type: "MedianPruner"
+    n_startup_trials: 5
+    n_warmup_steps: 2
+  direction: "maximize"
+  metric: "auprc"
+
+output:
+  save_models: true
+  xgboost_model_path: "xgboost_pneumothorax_optuna.json"
+  lightgbm_model_path: "lightgbm_pneumothorax_optuna.txt"
+  
+  save_params: true
+  best_params_path: "data/best_hyperparameters.json"
+  
+  save_feature_importance: true
+  
+  save_cv_results: true
