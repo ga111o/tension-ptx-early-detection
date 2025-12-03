@@ -5,3 +5,4 @@ outputs/
 mimic-cxr-chexpert/
 mimic-cxr-negbio/
 mimic-cxr-reports/
+logs/

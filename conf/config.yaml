@@ -10,10 +10,6 @@ data:
     - subject_id
     - hadm_id
     - label
-    - cohort_type
-    - group_label
-    - ref_time
-    - window_start
 
 pipeline:
   n_folds: 5
@@ -40,6 +36,20 @@ threshold:
 
 feature_importance:
   top_n: 20
+  permutation:
+    enabled: true
+    n_repeats: 5
+    importance_threshold: 0.0  # 이 값 이하의 importance를 가진 피처 제거
+    min_features: 10  # 최소 유지할 피처 수
+  rfe:
+    enabled: false
+    step: 5  # 한 번에 제거할 피처 수
+    min_features: 10  # 최소 유지할 피처 수
+    performance_tolerance: 0.01  # 성능 감소 허용치 (AUPRC 기준)
+  null_importance:
+    enabled: false
+    n_runs: 10  # Null Importance 계산 반복 횟수
+    threshold_percentile: 95  # 제거 임계값 백분위수
 
 optuna:
   n_trials: 100
@@ -53,16 +63,22 @@ optuna:
     n_startup_trials: 5
     n_warmup_steps: 2
   direction: "maximize"
-  metric: "auprc"
+  metric: "logloss"  # logloss, auprc, auroc, recall 등
+
+ensemble:
+  soft_voting_metric: "auroc"  # 가중치 최적화에 사용할 메트릭 (auroc, auprc)
+  stacking_solver: "lbfgs"     # 메타모델 solver (lbfgs, liblinear, newton-cg 등)
+  stacking_C: 1.0             # 메타모델 규제 강도 (값이 작을수록 강한 규제)
+  stacking_random_state: 42    # 메타모델 random state
 
 output:
   save_models: true
   xgboost_model_path: "xgboost_pneumothorax_optuna.json"
   lightgbm_model_path: "lightgbm_pneumothorax_optuna.txt"
-  
+
   save_params: true
   best_params_path: "data/best_hyperparameters.json"
-  
+
   save_feature_importance: true
-  
+
   save_cv_results: true

@@ -1,7 +1,7 @@
 """
 Preprocessing Module
 ====================
-- Raw Feature CSV 로드
+- Engineered Feature CSV 로드
 - 결측치 처리 (그룹별 Greedy 샘플 제거 + MICE 다중 대체)
 - 전처리된 Feature CSV 저장
 """
@@ -17,30 +17,18 @@ from sklearn.impute import IterativeImputer
 warnings.filterwarnings("ignore")
 
 
-# =============================================================================
-# Configuration
-# =============================================================================
-RAW_FEATURES_PATH = "data/features_raw.csv"
+ENGINEERED_FEATURES_PATH = "data/features_engineered.csv"
 PREPROCESSED_FEATURES_PATH = "data/features_preprocessed.csv"
 
-
-# =============================================================================
-# Helper Functions
-# =============================================================================
 def get_feature_columns(df: pd.DataFrame) -> List[str]:
     """Feature 컬럼만 추출"""
     meta_cols = {"subject_id", "hadm_id", "label", "cohort_type", "group_label", "ref_time", "window_start"}
     return [c for c in df.columns if c not in meta_cols]
 
-
 def _get_group_label(label: int) -> str:
     """label → group_label 변환"""
     return "experimental" if label == 1 else "control"
 
-
-# =============================================================================
-# Missing Value Analysis
-# =============================================================================
 def analyze_missing_by_group(
     df: pd.DataFrame,
     feature_cols: List[str],
@@ -98,9 +86,6 @@ def print_missing_summary(df: pd.DataFrame, feature_cols: Optional[List[str]] = 
                 print(f"      - {feat}: {rate:.2f}%")
 
 
-# =============================================================================
-# Greedy Sample Removal
-# =============================================================================
 def greedy_sample_removal(
     df: pd.DataFrame,
     feature_cols: List[str],
@@ -109,7 +94,6 @@ def greedy_sample_removal(
     min_control_samples: int = 100,
     batch_size: int = 100,
 ) -> pd.DataFrame:
-    """Greedy 샘플 제거 (Control 그룹 우선)"""
     df = df.copy()
     if "group_label" not in df.columns:
         df["group_label"] = df["label"].apply(_get_group_label)
@@ -126,7 +110,6 @@ def greedy_sample_removal(
     while True:
         iteration += 1
 
-        # Control 그룹에서 임계값 초과 feature 확인
         exceeding = []
         for col in feature_cols:
             if len(control_df) > 0:
@@ -137,7 +120,6 @@ def greedy_sample_removal(
         if not exceeding or len(control_df) <= min_control_samples:
             break
 
-        # 우선순위 점수 계산
         scores = pd.Series(0.0, index=control_df.index)
         for col, excess in exceeding:
             scores[control_df[col].isna()] += excess
@@ -156,9 +138,6 @@ def greedy_sample_removal(
     return pd.concat([exp_df, control_df], ignore_index=True)
 
 
-# =============================================================================
-# Feature Filtering
-# =============================================================================
 def get_usable_features(
     df: pd.DataFrame,
     feature_cols: List[str],
@@ -194,9 +173,6 @@ def get_usable_features(
     return usable
 
 
-# =============================================================================
-# Multiple Imputation (MICE)
-# =============================================================================
 def apply_multiple_imputation(
     df: pd.DataFrame,
     feature_cols: Optional[List[str]] = None,
@@ -240,9 +216,6 @@ def apply_multiple_imputation(
     return result_df
 
 
-# =============================================================================
-# Main Pipeline
-# =============================================================================
 def handle_missing_values(
     df: pd.DataFrame,
     control_threshold: float = 50.0,
@@ -304,12 +277,9 @@ def handle_missing_values(
     return df, info
 
 
-# =============================================================================
-# CSV I/O
-# =============================================================================
-def load_raw_features(input_path: str = RAW_FEATURES_PATH) -> pd.DataFrame:
-    """Raw Feature CSV 로드"""
-    print(f"\n[Raw Features 로드] {input_path}")
+def load_engineered_features(input_path: str = ENGINEERED_FEATURES_PATH) -> pd.DataFrame:
+    """Engineered Feature CSV 로드"""
+    print(f"\n[Engineered Features 로드] {input_path}")
     df = pd.read_csv(input_path)
     feature_cols = get_feature_columns(df)
     print(f"  샘플: {len(df)}개, Features: {len(feature_cols)}개")
@@ -341,11 +311,8 @@ def save_preprocessed_features(
     print(f"  최종 결측치: {final_missing}개")
 
 
-# =============================================================================
-# Main Entrypoint
-# =============================================================================
 def run_preprocessing(
-    input_path: str = RAW_FEATURES_PATH,
+    input_path: str = ENGINEERED_FEATURES_PATH,
     output_path: str = PREPROCESSED_FEATURES_PATH,
     control_threshold: float = 50.0,
     experimental_threshold: float = 85.0,
@@ -358,11 +325,11 @@ def run_preprocessing(
 ) -> Tuple[pd.DataFrame, Dict]:
     """
     전처리 파이프라인 실행
-    
+
     Parameters
     ----------
     input_path : str
-        Raw Feature CSV 경로
+        Engineered Feature CSV 경로
     output_path : str
         출력 CSV 경로
     control_threshold : float
@@ -381,7 +348,7 @@ def run_preprocessing(
         랜덤 시드
     exclude_silver : bool
         Silver 코호트 제외 여부
-    
+
     Returns
     -------
     Tuple[pd.DataFrame, Dict]
@@ -390,9 +357,9 @@ def run_preprocessing(
     print("=" * 60)
     print("Preprocessing Pipeline")
     print("=" * 60)
-    
-    # Raw Features 로드
-    df = load_raw_features(input_path)
+
+    # Engineered Features 로드
+    df = load_engineered_features(input_path)
     
     # 결측치 현황 출력
     print_missing_summary(df)
@@ -437,7 +404,7 @@ def run_preprocessing(
 
 if __name__ == "__main__":
     config = {
-        "input_path": "data/features_raw.csv",
+        "input_path": "data/features_engineered.csv",
         "output_path": "data/features_preprocessed.csv",
         "control_threshold": 50.0,
         "experimental_threshold": 85.0,
