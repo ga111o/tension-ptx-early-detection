@@ -17,21 +17,21 @@ def load_preprocessed_features(path: str, meta_cols: List[str]) -> pd.DataFrame:
     Returns:
         DataFrame containing the loaded features
     """
-    print(f"\n[전처리된 Features 로드] {path}")
+    print(f"\nLoading preprocessed features: {path}")
     df = pd.read_csv(path)
 
     feature_cols = get_feature_columns(df, meta_cols)
     n_pos = (df["label"] == 1).sum()
     n_neg = (df["label"] == 0).sum()
 
-    print(f"  샘플: {len(df)}개 (Positive={n_pos}, Negative={n_neg})")
-    print(f"  Features: {len(feature_cols)}개")
+    print(f"Samples: {len(df)} Positive={n_pos}, Negative={n_neg}")
+    print(f"Features: {len(feature_cols)}")
 
     missing_count = df[feature_cols].isna().sum().sum()
     if missing_count > 0:
-        print(f"  결측치: {missing_count}개")
+        print(f"Missing values: {missing_count}")
     else:
-        print("  결측치 없음")
+        print("No missing values")
 
     return df
 

@@ -1,9 +1,8 @@
 """
 Preprocessing Module
-====================
-- Engineered Feature CSV 로드
-- 결측치 처리 (그룹별 Greedy 샘플 제거 + MICE 다중 대체)
-- 전처리된 Feature CSV 저장
+Load Engineered Feature CSV
+Handle missing values with Greedy sample removal and MICE imputation
+Save preprocessed Feature CSV
 """
 
 import warnings
@@ -21,12 +20,12 @@ ENGINEERED_FEATURES_PATH = "data/features_engineered.csv"
 PREPROCESSED_FEATURES_PATH = "data/features_preprocessed.csv"
 
 def get_feature_columns(df: pd.DataFrame) -> List[str]:
-    """Feature 컬럼만 추출"""
+    """Extract feature columns only"""
     meta_cols = {"subject_id", "hadm_id", "label", "cohort_type", "group_label", "ref_time", "window_start"}
     return [c for c in df.columns if c not in meta_cols]
 
 def _get_group_label(label: int) -> str:
-    """label → group_label 변환"""
+    """Convert label to group_label"""
     return "experimental" if label == 1 else "control"
 
 def analyze_missing_by_group(
@@ -36,7 +35,7 @@ def analyze_missing_by_group(
     experimental_threshold: float = 85.0,
     verbose: bool = False,
 ) -> Dict:
-    """그룹별 결측률 분석"""
+    """Analyze missing rate by group"""
     thresholds = {"control": control_threshold, "experimental": experimental_threshold}
     result = {}
 
@@ -54,36 +53,33 @@ def analyze_missing_by_group(
         result[group] = {"count": len(group_df), "threshold": threshold, "exceeding_features": exceeding}
 
         if verbose:
-            print(f"\n[{group.upper()}] 샘플: {len(group_df)}, 임계값 초과 Feature: {len(exceeding)}개")
+            print(f"\n{group.upper()} Samples: {len(group_df)}, Features exceeding threshold: {len(exceeding)}")
 
     return result
 
 
 def print_missing_summary(df: pd.DataFrame, feature_cols: Optional[List[str]] = None):
-    """결측치 현황 요약 출력"""
+    """Print missing value summary"""
     if feature_cols is None:
         feature_cols = get_feature_columns(df)
     
-    print("\n[결측치 현황]")
+    print("\nMissing value summary")
     
-    # 전체 통계
     missing_rates = df[feature_cols].isna().mean() * 100
-    print(f"  전체 평균 결측률: {missing_rates.mean():.2f}%")
-    print(f"  결측률 범위: {missing_rates.min():.2f}% ~ {missing_rates.max():.2f}%")
+    print(f"Overall average missing rate: {missing_rates.mean():.2f}%")
+    print(f"Missing rate range: {missing_rates.min():.2f}% ~ {missing_rates.max():.2f}%")
     
-    # 그룹별 통계
-    for group_name, label_filter in [("Experimental (label=1)", df["label"] == 1), ("Control (label!=1)", df["label"] != 1)]:
+    for group_name, label_filter in [("Experimental label=1", df["label"] == 1), ("Control label!=1", df["label"] != 1)]:
         group_df = df[label_filter]
         if len(group_df) > 0:
             group_missing = group_df[feature_cols].isna().mean() * 100
-            print(f"\n  [{group_name}] 샘플: {len(group_df)}개")
-            print(f"    평균 결측률: {group_missing.mean():.2f}%")
+            print(f"\n{group_name} Samples: {len(group_df)}")
+            print(f"Average missing rate: {group_missing.mean():.2f}%")
             
-            # 결측률 높은 상위 5개 feature
             top_missing = group_missing.sort_values(ascending=False).head(5)
-            print(f"    상위 결측 Feature:")
+            print(f"Top 5 missing features:")
             for feat, rate in top_missing.items():
-                print(f"      - {feat}: {rate:.2f}%")
+                print(f"  - {feat}: {rate:.2f}%")
 
 
 def greedy_sample_removal(
@@ -133,7 +129,7 @@ def greedy_sample_removal(
         control_df = control_df.drop(indices_to_remove).reset_index(drop=True)
         removed_count += n_remove
 
-    print(f"  반복: {iteration}, 제거: {removed_count}개 -> Control: {len(control_df)}개")
+    print(f"Iterations: {iteration}, Removed: {removed_count} -> Control: {len(control_df)}")
 
     return pd.concat([exp_df, control_df], ignore_index=True)
 
@@ -145,12 +141,12 @@ def get_usable_features(
     experimental_threshold: float = 85.0,
     verbose: bool = True,
 ) -> List[str]:
-    """그룹별 임계값 만족 Feature 필터링"""
+    """Filter features meeting group-specific thresholds"""
     control_df = df[df["label"] != 1]
     exp_df = df[df["label"] == 1]
 
     usable = []
-    feature_missing_rates = []  # (feature_name, ctrl_rate, exp_rate)
+    feature_missing_rates = []
     
     for col in feature_cols:
         ctrl_rate = control_df[col].isna().mean() * 100 if len(control_df) > 0 else 0
@@ -159,10 +155,9 @@ def get_usable_features(
             usable.append(col)
             feature_missing_rates.append((col, ctrl_rate, exp_rate))
 
-    print(f"\n  사용 가능 Feature: {len(usable)}/{len(feature_cols)}개")
+    print(f"\nUsable features: {len(usable)}/{len(feature_cols)}")
     
     if verbose and usable:
-        # 결측률 기준 정렬 (Control 결측률 높은 순)
         feature_missing_rates.sort(key=lambda x: x[1], reverse=True)
         
         print(f"\n  {'Feature':<40} {'Control(%)':<12} {'Exp(%)':<12}")
@@ -180,7 +175,7 @@ def apply_multiple_imputation(
     max_iter: int = 10,
     random_state: int = 42,
 ) -> pd.DataFrame:
-    """다중 대체법 (MICE × n_imputations 평균)"""
+    """Multiple imputation with MICE"""
     if feature_cols is None:
         feature_cols = get_feature_columns(df)
 
@@ -189,10 +184,10 @@ def apply_multiple_imputation(
     missing_count = np.isnan(X).sum()
 
     if missing_count == 0:
-        print("  결측치 없음")
+        print("No missing values")
         return df
 
-    print(f"\n[다중 대체법] n_imputations={n_imputations}, 결측치={missing_count}")
+    print(f"\nMultiple imputation n_imputations={n_imputations}, missing={missing_count}")
 
     imputed_arrays = []
     with warnings.catch_warnings():
@@ -212,7 +207,7 @@ def apply_multiple_imputation(
     for idx, col in enumerate(feature_cols):
         result_df[col] = X_final[:, idx]
 
-    print(f"  {missing_count}개 결측치 대체 완료")
+    print(f"Imputation complete: {missing_count} missing values filled")
     return result_df
 
 
@@ -227,13 +222,13 @@ def handle_missing_values(
     random_state: int = 42,
 ) -> Tuple[pd.DataFrame, Dict]:
     """
-    그룹별 결측치 처리 파이프라인
-    1) Greedy 샘플 제거
-    2) Feature 필터링
-    3) MICE 다중 대체
+    Group-specific missing value handling pipeline
+    1 Greedy sample removal
+    2 Feature filtering
+    3 MICE multiple imputation
     """
     print("\n" + "=" * 60)
-    print("결측치 처리 파이프라인")
+    print("Missing Value Handling Pipeline")
     print("=" * 60)
 
     feature_cols = get_feature_columns(df)
@@ -244,20 +239,17 @@ def handle_missing_values(
     n_exp_init = (df["group_label"] == "experimental").sum()
     n_ctrl_init = (df["group_label"] == "control").sum()
 
-    print(f"초기: {len(df)}개 (Exp={n_exp_init}, Ctrl={n_ctrl_init}), Features={len(feature_cols)}")
+    print(f"Initial: {len(df)} samples Exp={n_exp_init}, Ctrl={n_ctrl_init}, Features={len(feature_cols)}")
 
-    # Step 1: Greedy 샘플 제거
     df = greedy_sample_removal(
         df, feature_cols, control_threshold, experimental_threshold, min_control_samples, batch_size
     )
 
-    # Step 2: Feature 필터링
     usable_features = get_usable_features(df, feature_cols, control_threshold, experimental_threshold)
 
     if not usable_features:
         return df, {"usable_features": [], "excluded_features": feature_cols}
 
-    # Step 3: MICE 다중 대체
     df = apply_multiple_imputation(df, usable_features, n_imputations, mice_max_iter, random_state)
 
     n_exp_final = (df["group_label"] == "experimental").sum()
@@ -273,16 +265,16 @@ def handle_missing_values(
         "final_missing_rate": df[usable_features].isna().mean().mean(),
     }
 
-    print(f"\n완료: {len(df)}개 (Exp={n_exp_final}, Ctrl={n_ctrl_final}), Features={len(usable_features)}")
+    print(f"\nComplete: {len(df)} samples Exp={n_exp_final}, Ctrl={n_ctrl_final}, Features={len(usable_features)}")
     return df, info
 
 
 def load_engineered_features(input_path: str = ENGINEERED_FEATURES_PATH) -> pd.DataFrame:
-    """Engineered Feature CSV 로드"""
-    print(f"\n[Engineered Features 로드] {input_path}")
+    """Load Engineered Feature CSV"""
+    print(f"\nLoading Engineered Features: {input_path}")
     df = pd.read_csv(input_path)
     feature_cols = get_feature_columns(df)
-    print(f"  샘플: {len(df)}개, Features: {len(feature_cols)}개")
+    print(f"Samples: {len(df)}, Features: {len(feature_cols)}")
     return df
 
 
@@ -291,8 +283,7 @@ def save_preprocessed_features(
     output_path: str = PREPROCESSED_FEATURES_PATH,
     usable_features: Optional[List[str]] = None,
 ):
-    """전처리된 Feature CSV 저장"""
-    # 메타 컬럼 + 사용 가능 feature만 저장
+    """Save preprocessed Feature CSV"""
     meta_cols = ["subject_id", "hadm_id", "label"]
     if usable_features:
         save_cols = meta_cols + usable_features
@@ -303,12 +294,11 @@ def save_preprocessed_features(
     save_df.to_csv(output_path, index=False)
     
     feature_cols = [c for c in save_df.columns if c not in meta_cols]
-    print(f"\nPreprocessed Features 저장: {output_path}")
-    print(f"  샘플: {len(save_df)}개, Features: {len(feature_cols)}개")
+    print(f"\nSaving Preprocessed Features: {output_path}")
+    print(f"Samples: {len(save_df)}, Features: {len(feature_cols)}")
     
-    # 최종 결측치 확인
     final_missing = save_df[feature_cols].isna().sum().sum()
-    print(f"  최종 결측치: {final_missing}개")
+    print(f"Final missing values: {final_missing}")
 
 
 def run_preprocessing(
@@ -324,54 +314,37 @@ def run_preprocessing(
     exclude_silver: bool = True,
 ) -> Tuple[pd.DataFrame, Dict]:
     """
-    전처리 파이프라인 실행
+    Run preprocessing pipeline
 
     Parameters
-    ----------
-    input_path : str
-        Engineered Feature CSV 경로
-    output_path : str
-        출력 CSV 경로
-    control_threshold : float
-        Control 그룹 결측률 임계값 (%)
-    experimental_threshold : float
-        Experimental 그룹 결측률 임계값 (%)
-    min_control_samples : int
-        최소 Control 샘플 수
-    batch_size : int
-        Greedy 제거 배치 크기
-    n_imputations : int
-        MICE 다중 대체 횟수
-    mice_max_iter : int
-        MICE 최대 반복 횟수
-    random_state : int
-        랜덤 시드
-    exclude_silver : bool
-        Silver 코호트 제외 여부
+    input_path: Engineered Feature CSV path
+    output_path: Output CSV path
+    control_threshold: Control group missing rate threshold
+    experimental_threshold: Experimental group missing rate threshold
+    min_control_samples: Minimum Control sample count
+    batch_size: Greedy removal batch size
+    n_imputations: MICE multiple imputation count
+    mice_max_iter: MICE max iterations
+    random_state: Random seed
+    exclude_silver: Exclude silver cohort
 
     Returns
-    -------
-    Tuple[pd.DataFrame, Dict]
-        전처리된 DataFrame과 처리 정보
+    Preprocessed DataFrame and processing info
     """
     print("=" * 60)
     print("Preprocessing Pipeline")
     print("=" * 60)
 
-    # Engineered Features 로드
     df = load_engineered_features(input_path)
     
-    # 결측치 현황 출력
     print_missing_summary(df)
     
-    # Silver 제외 (학습에서 제외되는 샘플)
     if exclude_silver and "label" in df.columns:
         silver_count = (df["label"] == -1).sum()
         if silver_count > 0:
-            print(f"\n[Silver 코호트 제외] {silver_count}개")
+            print(f"\nExcluding Silver cohort: {silver_count} samples")
             df = df[df["label"] != -1].copy()
     
-    # 결측치 처리
     df, info = handle_missing_values(
         df,
         control_threshold=control_threshold,
@@ -383,21 +356,19 @@ def run_preprocessing(
         random_state=random_state,
     )
     
-    # 전처리된 CSV 저장
     save_preprocessed_features(df, output_path, info.get("usable_features"))
     
-    # 처리 정보 출력
     print("\n" + "=" * 60)
-    print("전처리 완료 요약")
+    print("Preprocessing Complete Summary")
     print("=" * 60)
-    print(f"  초기 샘플: {info['initial_samples']}개")
-    print(f"  최종 샘플: {info['final_samples']}개")
-    print(f"  제거된 Control 샘플: {info['removed_control']}개")
-    print(f"  제거된 Experimental 샘플: {info['removed_experimental']}개")
-    print(f"  사용 가능 Feature: {len(info['usable_features'])}개")
-    print(f"  제외된 Feature: {len(info['excluded_features'])}개")
+    print(f"Initial samples: {info['initial_samples']}")
+    print(f"Final samples: {info['final_samples']}")
+    print(f"Removed Control samples: {info['removed_control']}")
+    print(f"Removed Experimental samples: {info['removed_experimental']}")
+    print(f"Usable features: {len(info['usable_features'])}")
+    print(f"Excluded features: {len(info['excluded_features'])}")
     if info['excluded_features']:
-        print(f"    제외 목록: {info['excluded_features'][:10]}{'...' if len(info['excluded_features']) > 10 else ''}")
+        print(f"Excluded list: {info['excluded_features'][:10]}{'...' if len(info['excluded_features']) > 10 else ''}")
     
     return df, info
 
@@ -416,7 +387,7 @@ if __name__ == "__main__":
         "exclude_silver": True,
     }
     
-    print("Preprocessing 설정:")
+    print("Preprocessing configuration:")
     for k, v in config.items():
         print(f"  {k}: {v}")
     print()

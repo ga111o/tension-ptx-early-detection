@@ -168,7 +168,6 @@ def _create_objective(
             if "min_split_gain" in optuna_range:
                 params["min_split_gain"] = suggest_param(trial, "min_split_gain", optuna_range["min_split_gain"])
 
-        # Cost-Sensitive 사용 시에만 pos_weight_multiplier 튜닝
         if use_cost_sensitive and "pos_weight_multiplier" in optuna_range:
             pos_weight_multiplier = suggest_param(trial, "pos_weight_multiplier", optuna_range["pos_weight_multiplier"])
             n_pos = np.sum(y == 1)
@@ -183,7 +182,6 @@ def _create_objective(
             X_train, X_val = X[train_idx], X[val_idx]
             y_train, y_val = y[train_idx], y[val_idx]
 
-            # 전처리
             imputer = SimpleImputer(strategy=imputer_strategy)
             X_train = imputer.fit_transform(X_train)
             X_val = imputer.transform(X_val)
@@ -200,16 +198,12 @@ def _create_objective(
             else:
                 model = train_lightgbm(X_train_res, y_train_res, X_val, y_val, model_cfg, cfg, params, effective_cost, use_gpu, random_seed)
 
-            # Custom objective 사용 시 predict_proba가 1차원 배열을 반환할 수 있음
             y_prob_raw = model.predict_proba(X_val)
             if y_prob_raw.ndim == 1:
-                # 1차원 배열인 경우 (custom objective)
                 y_prob = y_prob_raw
             else:
-                # 2차원 배열인 경우 (일반 binary classification)
                 y_prob = y_prob_raw[:, 1]
 
-            # 메트릭 계산
             if metric == "auprc":
                 score = average_precision_score(y_val, y_prob)
             elif metric == "auroc":
@@ -217,27 +211,21 @@ def _create_objective(
             elif metric in ["logloss", "log_loss", "binary_logloss"]:
                 score = -log_loss(y_val, y_prob)
             elif metric == "recall":
-                # Target recall을 달성하면서 precision을 최대화하는 threshold 찾기
                 precision_arr, recall_arr, thresholds = precision_recall_curve(y_val, y_prob)
                 target = pipeline_cfg.target_recall
-                # target recall 이상인 지점에서 precision이 최대인 threshold
                 valid_idx = np.where(recall_arr >= target)[0]
                 if len(valid_idx) > 0:
-                    # valid한 recall 중 precision이 가장 높은 지점
                     best_idx = valid_idx[np.argmax(precision_arr[valid_idx])]
                     best_threshold = thresholds[best_idx] if best_idx < len(thresholds) else 0.5
                 else:
-                    # target recall 달성 불가 시, recall이 가장 높은 threshold (낮은 threshold)
                     best_threshold = thresholds[0] if len(thresholds) > 0 else 0.1
 
                 y_pred = (y_prob >= best_threshold).astype(int)
                 current_recall = recall_score(y_val, y_pred, zero_division=0)
                 current_precision = precision_score(y_val, y_pred, zero_division=0)
-                # Recall + Precision/2 (Recall에 더 가중치)
                 score = current_recall + 0.5 * current_precision
             elif metric == "recall_at_threshold":
-                # 특정 threshold에서의 recall 최적화
-                threshold = 0.3  # 낮은 threshold로 recall 우선
+                threshold = 0.3
                 y_pred = (y_prob >= threshold).astype(int)
                 score = recall_score(y_val, y_pred, zero_division=0)
             elif metric == "f1_score":
@@ -245,12 +233,10 @@ def _create_objective(
                 f1_scores = 2 * (precision * recall) / (precision + recall + 1e-8)
                 score = np.max(f1_scores)
             elif metric == "f2_score":
-                # F2 score: Recall에 2배 가중치
                 precision, recall, _ = precision_recall_curve(y_val, y_prob)
                 f2_scores = (5 * precision * recall) / (4 * precision + recall + 1e-8)
                 score = np.max(f2_scores)
             elif metric == "f3_score":
-                # F3 score: Recall에 3배 가중치 (더 aggressive)
                 precision, recall, _ = precision_recall_curve(y_val, y_prob)
                 beta = 3
                 f_beta = ((1 + beta**2) * precision * recall) / (beta**2 * precision + recall + 1e-8)

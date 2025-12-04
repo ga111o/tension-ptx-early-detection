@@ -82,10 +82,8 @@ def run_cross_validation(
 
         X_train_res, y_train_res = apply_resampling(X_train, y_train, resampling_method, random_seed, cfg.resampling)
 
-        # XGBoost
         xgb_model = train_with_best_params(X_train_res, y_train_res, X_test, y_test, {}, "xgboost",
                                            xgb_model_cfg, cfg, effective_cost_sensitive, use_gpu, random_seed)
-        # Custom objective 사용 시 predict_proba가 1차원 배열을 반환할 수 있음
         y_prob_xgb_raw = xgb_model.predict_proba(X_test)
         y_prob_xgb = y_prob_xgb_raw if y_prob_xgb_raw.ndim == 1 else y_prob_xgb_raw[:, 1]
         
@@ -105,10 +103,8 @@ def run_cross_validation(
 
         print(f"  XGBoost  AUROC={cv_results['XGBoost']['auroc'][-1]:.4f}, AUPRC={cv_results['XGBoost']['auprc'][-1]:.4f}")
 
-        # LightGBM
         lgb_model = train_with_best_params(X_train_res, y_train_res, X_test, y_test, {}, "lightgbm",
                                            lgb_model_cfg, cfg, effective_cost_sensitive, use_gpu, random_seed)
-        # Custom objective 사용 시 predict_proba가 1차원 배열을 반환할 수 있음
         y_prob_lgb_raw = lgb_model.predict_proba(X_test)
         y_prob_lgb = y_prob_lgb_raw if y_prob_lgb_raw.ndim == 1 else y_prob_lgb_raw[:, 1]
         
@@ -184,19 +180,15 @@ def _run_cv_with_best_params(
     groups = features_df["subject_id"].values
     gkf = GroupKFold(n_splits=n_folds)
 
-    # 결과 저장을 위한 딕셔너리
     metrics_list = ["auroc", "auprc", "f1", "precision", "recall", "accuracy"]
     model_names = ["XGBoost", "LightGBM", "SoftVoting", "Stacking"]
 
     cv_results = {m: {k: [] for k in metrics_list} for m in model_names}
     optimal_thresholds = {m: [] for m in model_names}
 
-    # OOF (Out-Of-Fold) 예측값 저장을 위한 배열 (전체 데이터 크기만큼 0으로 초기화)
-    # [n_samples]
     oof_xgb = np.zeros(len(y))
     oof_lgb = np.zeros(len(y))
 
-    # 앙상블을 위한 Fold별 True Label 저장 (셔플링 이슈 대응)
     y_true_sorted = np.zeros(len(y))
     effective_cost = use_cost_sensitive and resampling_method == "none"
     print(f"\n{'='*20} Start Ensemble CV {'='*20}")
@@ -206,7 +198,6 @@ def _run_cv_with_best_params(
         X_train, X_test = X[train_idx], X[test_idx]
         y_train, y_test = y[train_idx], y[test_idx]
 
-        # OOF 정렬을 위해 현재 Test Index에 해당하는 정답값 기록
         y_true_sorted[test_idx] = y_test
         if np.isnan(X_train).sum() > 0:
             imputer = SimpleImputer(strategy=imputer_strategy)
@@ -216,53 +207,25 @@ def _run_cv_with_best_params(
         X_train = scaler.fit_transform(X_train)
         X_test = scaler.transform(X_test)
         X_train_res, y_train_res = apply_resampling(X_train, y_train, resampling_method, random_seed, cfg.resampling)
-        # -------------------------------------------------------
-        # 1. Base Models Training & Prediction
-        # -------------------------------------------------------
 
-        # XGBoost
         xgb_model = train_with_best_params(X_train_res, y_train_res, X_test, y_test, xgb_params,
                                            "xgboost", xgb_model_cfg, cfg, effective_cost, use_gpu, random_seed)
-        # Custom objective 사용 시 predict_proba가 1차원 배열을 반환할 수 있음
         y_prob_xgb_raw = xgb_model.predict_proba(X_test)
         y_prob_xgb = y_prob_xgb_raw if y_prob_xgb_raw.ndim == 1 else y_prob_xgb_raw[:, 1]
-        oof_xgb[test_idx] = y_prob_xgb  # OOF 저장
+        oof_xgb[test_idx] = y_prob_xgb
 
-        # LightGBM
         lgb_model = train_with_best_params(X_train_res, y_train_res, X_test, y_test, lgb_params,
                                            "lightgbm", lgb_model_cfg, cfg, effective_cost, use_gpu, random_seed)
-        # Custom objective 사용 시 predict_proba가 1차원 배열을 반환할 수 있음
         y_prob_lgb_raw = lgb_model.predict_proba(X_test)
         y_prob_lgb = y_prob_lgb_raw if y_prob_lgb_raw.ndim == 1 else y_prob_lgb_raw[:, 1]
-        oof_lgb[test_idx] = y_prob_lgb  # OOF 저장
+        oof_lgb[test_idx] = y_prob_lgb
 
-        # -------------------------------------------------------
-        # 2. Ensemble: Soft Voting (Fold 내부에서 최적 가중치 계산은 과적합 위험이 있으므로,
-        #    일반적으로는 Validation Set에서는 0.5 혹은 전체 OOF 후 계산하지만,
-        #    여기서는 Fold마다 단순 평균(0.5)으로 성능 기록)
-        # -------------------------------------------------------
         y_prob_voting = (y_prob_xgb + y_prob_lgb) / 2
 
-        # -------------------------------------------------------
-        # 3. Ensemble: Stacking (Fold-level approximation for logging)
-        #    실제 Stacking은 CV 종료 후 전체 OOF 데이터로 학습하므로,
-        #    여기서는 Fold별 성능 추이를 보기 위한 approximation으로
-        #    현재 Fold의 Validation 예측값을 사용합니다.
-        # -------------------------------------------------------
-
-        # Fold 내에서 Stacking 성능을 추정하기 위해 Validation 예측값 사용
-        # (실제 메타 모델은 CV 종료 후 전체 OOF로 학습)
         X_meta_test = np.column_stack((y_prob_xgb, y_prob_lgb))
 
-        # 임시 메타 모델로 Fold 내 성능 추정 (실제 모델은 CV 후 학습)
-        # 간단한 평균으로 approximation
         y_prob_stacking = (y_prob_xgb + y_prob_lgb) / 2
 
-        # -------------------------------------------------------
-        # 4. Metric Calculation & Logging
-        # -------------------------------------------------------
-
-        # 예측 확률 모음
         preds_dict = {
             "XGBoost": y_prob_xgb,
             "LightGBM": y_prob_lgb,
@@ -270,11 +233,7 @@ def _run_cv_with_best_params(
             "Stacking": y_prob_stacking
         }
 
-        # (Inner function to reduce repetition)
         def calc_metrics_and_log(name, y_true, y_prob):
-            # Threshold 찾기 (여기서는 Train 데이터 기준이 원칙이나 편의상 Test prob 분포 활용 혹은 고정값)
-            # 엄밀하게는 y_train과 base model의 train prob를 써야 함.
-            # 여기서는 편의상 Soft Voting 등은 0.5 default 혹은 Youden 적용
             opt_thresh, _ = find_optimal_threshold(y_true, y_prob, target_recall, threshold_method, default_threshold)
             optimal_thresholds[name].append(opt_thresh)
 
@@ -293,21 +252,14 @@ def _run_cv_with_best_params(
         print(f"  [Vote] AUROC={cv_results['SoftVoting']['auroc'][-1]:.4f}, F1={cv_results['SoftVoting']['f1'][-1]:.4f}")
         print(f"  [Stack] AUROC={cv_results['Stacking']['auroc'][-1]:.4f}, F1={cv_results['Stacking']['f1'][-1]:.4f}")
 
-    # -------------------------------------------------------
-    # 전체 CV 종료 후: Global Ensemble Optimization (OOF 기반)
-    # -------------------------------------------------------
-
-    # 1. Soft Voting 최적 가중치 찾기
     best_weight_xgb = optimize_ensemble_weights(y, oof_xgb, oof_lgb, cfg)
     print(f"\n[Global Optimization] Best Weight for XGB: {best_weight_xgb:.2f} (LGB: {1-best_weight_xgb:.2f})")
 
-    # 2. Stacking 메타 모델 학습 (OOF 기반 - 과적합 방지)
     print("\n[Global Stacking] Train Meta Model using OOF predictions")
     X_meta_train = np.column_stack((oof_xgb, oof_lgb))
     meta_model = train_stacking_model(X_meta_train, y, cfg)
     print("  Meta model trained successfully using OOF predictions")
 
-    # 2. 결과 출력
     summary_data = []
     for model in model_names:
         for metric in metrics_list:
@@ -316,7 +268,6 @@ def _run_cv_with_best_params(
 
     summary_df = pd.DataFrame(summary_data)
 
-    # 결과 반환에 최적 가중치와 메타 모델 학습을 위한 데이터 포함 가능
     return {
         "cv_results": cv_results,
         "summary": summary_df,

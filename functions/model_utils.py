@@ -57,13 +57,10 @@ def train_xgboost(
         cpu_cfg = OmegaConf.to_container(model_cfg.cpu, resolve=True)
         default_params.update(cpu_cfg)
 
-    # Cost-Sensitive와 Focal Loss를 동시에 사용하지 않도록 조정
     if use_cost_sensitive and "scale_pos_weight" not in default_params:
-        # Focal Loss 사용 시 scale_pos_weight를 적용하지 않음
         if not (cfg and cfg.focal_loss.enabled):
             default_params["scale_pos_weight"] = scale_pos_weight
 
-    # Apply focal loss for XGBoost
     if cfg and cfg.focal_loss.enabled:
         focal_loss = UnifiedFocalLoss(gamma=cfg.focal_loss.gamma, alpha=cfg.focal_loss.alpha)
         default_params["obj"] = focal_loss.xgb_obj
@@ -103,31 +100,21 @@ def train_lightgbm(
         cpu_cfg = OmegaConf.to_container(model_cfg.cpu, resolve=True)
         default_params.update(cpu_cfg)
 
-    # Cost-Sensitive와 Focal Loss를 동시에 사용하지 않도록 조정
     if use_cost_sensitive and "scale_pos_weight" not in default_params:
-        # Focal Loss 사용 시 scale_pos_weight를 적용하지 않음
         if not (cfg and cfg.focal_loss.enabled):
             default_params["scale_pos_weight"] = scale_pos_weight
     
-    # 기본 objective 설정을 가져옵니다 (없으면 None)
-    # custom objective를 쓸 경우, params 딕셔너리 안에 'objective'나 'fobj' 키가 남아있으면 충돌나므로 제거합니다.
     objective_func = default_params.pop("objective", None)
     if "fobj" in default_params:
         del default_params["fobj"]
 
-    # Focal Loss가 활성화된 경우 objective_func를 함수 객체로 교체
     if cfg and cfg.focal_loss.enabled:
         focal_loss = UnifiedFocalLoss(gamma=cfg.focal_loss.gamma, alpha=cfg.focal_loss.alpha)
         objective_func = focal_loss.lgb_obj
     
-    # Early stopping rounds 추출
     early_stopping = default_params.pop("early_stopping_rounds", None)
 
-    # LGBMClassifier 생성 시 objective 인자를 명시적으로 전달
-    # **default_params에는 문자열/숫자 파라미터만 남겨둠
     model = lgb.LGBMClassifier(objective=objective_func, **default_params)
-    
-    # --- [수정 끝] ---
 
     callbacks = []
     if early_stopping is not None:

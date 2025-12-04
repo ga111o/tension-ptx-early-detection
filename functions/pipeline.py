@@ -33,8 +33,16 @@ def run_optimization_pipeline(
     feature_cfg = cfg.feature_importance
     meta_cols = list(data_cfg.meta_cols)
 
-    # 초기 피처 준비
     feature_cols = get_feature_columns(features_df, meta_cols)
+    
+    # Exclude features with '_count' in their names
+    feature_cols_filtered = [col for col in feature_cols if '_count' not in col]
+    n_excluded = len(feature_cols) - len(feature_cols_filtered)
+    if n_excluded > 0:
+        print(f"\nExcluded {n_excluded}")
+        print(f"Features: {len(feature_cols)} -> {len(feature_cols_filtered)}")
+    feature_cols = feature_cols_filtered
+    
     X_full = features_df[feature_cols].values
     y = features_df["label"].values
     groups = features_df["subject_id"].values
@@ -43,48 +51,39 @@ def run_optimization_pipeline(
     print("PRE-OPTUNA FEATURE SELECTION")
     print(f"{'='*50}")
 
-    # 피처 선택 방법 결정 및 실행
     selected_feature_cols = feature_cols.copy()
 
-    # 1. RFE (Recursive Feature Elimination)
     if feature_cfg.rfe.enabled:
-        print("RFE 기반 피처 선택 활성화")
+        print("RFE based feature selection enabled")
         selected_feature_cols = select_features_rfe(
             features_df, selected_feature_cols, meta_cols, cfg, xgb_model_cfg
         )
 
-    # 2. Null Importance 기반 피처 선택
     elif feature_cfg.null_importance.enabled:
-        print("Null Importance 기반 피처 선택 활성화")
+        print("Null Importance based feature selection enabled")
         selected_feature_cols = select_features_null_importance(
             features_df, selected_feature_cols, meta_cols, cfg, xgb_model_cfg
         )
 
-    # 3. 기존 Permutation Importance 기반 피처 선택
     elif feature_cfg.permutation.enabled:
-        print("Permutation Importance 기반 피처 선택 활성화")
+        print("Permutation Importance based feature selection enabled")
         selected_feature_cols = select_features_cv_based(
             features_df, selected_feature_cols, meta_cols, cfg, xgb_model_cfg
         )
 
     else:
-        print("피처 선택 비활성화 - 모든 피처 사용")
+        print("Feature selection disabled, using all features")
 
-    # 선택된 피처로 데이터프레임 재구성
     if len(selected_feature_cols) != len(feature_cols):
         features_df_selected = features_df[selected_feature_cols + meta_cols].copy()
-        print(f"\n[피처 선택 완료] {len(selected_feature_cols)}/{len(feature_cols)} 피처 선택됨")
-        print(f"  제거율: {((len(feature_cols) - len(selected_feature_cols)) / len(feature_cols) * 100):.1f}%")
+        print(f"\nFeature selection complete: {len(selected_feature_cols)}/{len(feature_cols)} features selected")
+        print(f"Removal rate: {((len(feature_cols) - len(selected_feature_cols)) / len(feature_cols) * 100):.1f}%")
     else:
         features_df_selected = features_df.copy()
 
     results = {}
 
-    # 선택된 피처로 Optuna 최적화 수행
-    print(f"\n{'='*50}")
-    print("OPTUNA HYPERPARAMETER OPTIMIZATION")
-    print(f"{'='*50}")
-    print(f"사용 피처 수: {len(selected_feature_cols)}")
+    print(f"Selected features: {len(selected_feature_cols)}")
 
     xgb_opt = optimize_hyperparameters(features_df_selected, "xgboost", cfg, xgb_model_cfg)
     results["xgboost_optimization"] = xgb_opt
@@ -98,27 +97,24 @@ def run_optimization_pipeline(
     )
     results["cv_results"] = cv_results
 
-    # 선택된 피처로 최종 모델 학습
-    # 참고: 이 단계에서는 전체 데이터를 사용하므로 imputation/scaling이 허용됨
-    # (CV 기반 검증은 이미 완료되었고, 최종 모델은 전체 데이터로 학습)
     X_selected = features_df_selected[selected_feature_cols].values
     y = features_df_selected["label"].values
 
     imputer = None
     if np.isnan(X_selected).sum() > 0:
-        print(f"\n최종 모델 학습 - Missing values: {np.isnan(X_selected).sum()} -> MICE")
+        print(f"\nFinal model training - Missing values: {np.isnan(X_selected).sum()} -> MICE")
         from sklearn.experimental import enable_iterative_imputer
         from sklearn.impute import IterativeImputer
         imputer = IterativeImputer(random_state=pipeline_cfg.random_seed, max_iter=cfg.imputer.iterative.max_iter)
         X_selected = imputer.fit_transform(X_selected)
 
-    scaler_final = apply_preprocessing(X_selected, X_selected)[2]  # Only get scaler
+    scaler_final = apply_preprocessing(X_selected, X_selected)[2]
 
     X_res, y_res = apply_resampling(X_selected, y, pipeline_cfg.resampling_method, pipeline_cfg.random_seed, cfg.resampling)
     effective_cost = pipeline_cfg.use_cost_sensitive and pipeline_cfg.resampling_method == "none"
 
-    print("\n최종 모델 학습")
-    print(f"사용 피처: {len(selected_feature_cols)}개")
+    print("\nFinal model training")
+    print(f"Features used: {len(selected_feature_cols)}")
 
     print("Train XGBoost")
     xgb_model = train_with_best_params(X_res, y_res, X_selected, y, xgb_opt["best_params"], "xgboost",
@@ -130,11 +126,11 @@ def run_optimization_pipeline(
 
     results["models"] = {"xgboost": xgb_model, "lightgbm": lgb_model}
     results["feature_cols"] = selected_feature_cols
-    results["original_feature_cols"] = feature_cols  # 원본 피처 목록도 저장
+    results["original_feature_cols"] = feature_cols
     results["imputer"] = imputer
     results["scaler"] = scaler_final
     results["optimal_thresholds"] = cv_results["optimal_thresholds"]
-    results["ensemble_info"] = cv_results["ensemble_info"]  # 메타 모델 포함
+    results["ensemble_info"] = cv_results["ensemble_info"]
     results["feature_selection_info"] = {
         "enabled": feature_cfg.permutation.enabled,
         "original_n_features": len(feature_cols),
@@ -163,14 +159,14 @@ def run_pipeline(cfg: DictConfig) -> dict | None:
     print(f"{pipeline_cfg.n_folds}-Fold Cross-Validation")
 
     print("\nHydra")
-    print(f"  데이터 경로: {data_cfg.features_path}")
-    print(f"  CV Folds: {pipeline_cfg.n_folds}")
-    print(f"  리샘플링: {pipeline_cfg.resampling_method}")
-    print(f"  Cost-sensitive: {pipeline_cfg.use_cost_sensitive}")
-    print(f"  GPU: {pipeline_cfg.use_gpu}")
-    print(f"  Target Recall: {pipeline_cfg.target_recall}")
-    print(f"  Optuna 시행: {cfg.optuna.n_trials}회")
-    print(f"  최적화 메트릭: {cfg.optuna.metric}")
+    print(f"Data path: {data_cfg.features_path}")
+    print(f"CV Folds: {pipeline_cfg.n_folds}")
+    print(f"Resampling: {pipeline_cfg.resampling_method}")
+    print(f"Cost-sensitive: {pipeline_cfg.use_cost_sensitive}")
+    print(f"GPU: {pipeline_cfg.use_gpu}")
+    print(f"Target Recall: {pipeline_cfg.target_recall}")
+    print(f"Optuna trials: {cfg.optuna.n_trials}")
+    print(f"Optimization metric: {cfg.optuna.metric}")
 
     if pipeline_cfg.use_gpu:
         gpu_status = check_gpu_availability()
@@ -179,7 +175,6 @@ def run_pipeline(cfg: DictConfig) -> dict | None:
         set_gpu_status({"xgboost": False, "lightgbm": False})
         print("\nCPU only")
 
-    # 전처리된 Feature 로드
     features_df = load_preprocessed_features(data_cfg.features_path, meta_cols)
 
     if len(features_df) == 0:
@@ -206,7 +201,7 @@ def run_pipeline(cfg: DictConfig) -> dict | None:
     if output_cfg.save_models:
         xgb_model.save_model(output_cfg.xgboost_model_path)
         lgb_model.booster_.save_model(output_cfg.lightgbm_model_path)
-        print("\n모델 저장:")
+        print("\nModels saved:")
         print(f"  - {output_cfg.xgboost_model_path}")
         print(f"  - {output_cfg.lightgbm_model_path}")
 

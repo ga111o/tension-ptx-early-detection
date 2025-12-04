@@ -29,18 +29,16 @@ def optimize_ensemble_weights(
     ensemble_cfg = cfg.ensemble
     metric_name = ensemble_cfg.soft_voting_metric
 
-    # 메트릭 함수 선택
     if metric_name == "auroc":
         metric_func = roc_auc_score
     elif metric_name == "auprc":
         metric_func = average_precision_score
     else:
-        metric_func = roc_auc_score  # 기본값
+        metric_func = roc_auc_score
 
     best_score = -1
     best_w = 0.5
 
-    # 0.0 ~ 1.0 사이를 100등분하여 탐색
     for w in np.linspace(0, 1, 101):
         p_ensemble = w * p1 + (1 - w) * p2
         score = metric_func(y_true, p_ensemble)

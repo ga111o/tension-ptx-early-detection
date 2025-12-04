@@ -36,7 +36,7 @@ def apply_resampling(
     if method == "none":
         return X, y
 
-    print(f"  리샘플링: {method.upper()} (전: Pos={sum(y)}, Neg={len(y) - sum(y)})")
+    print(f"Resampling: {method.upper()} before: Pos={sum(y)}, Neg={len(y) - sum(y)}")
 
     if method == "smote":
         k_neighbors = resampling_cfg.smote.k_neighbors
@@ -48,7 +48,7 @@ def apply_resampling(
         raise ValueError(f"Unknown resampling method: {method}")
 
     X_res, y_res = sampler.fit_resample(X, y)
-    print(f"       (후: Pos={sum(y_res)}, Neg={len(y_res) - sum(y_res)})")
+    print(f"after: Pos={sum(y_res)}, Neg={len(y_res) - sum(y_res)}")
     return X_res, y_res
 
 
