@@ -71,6 +71,11 @@ ensemble:
   stacking_C: 1.0             # 메타모델 규제 강도 (값이 작을수록 강한 규제)
   stacking_random_state: 42    # 메타모델 random state
 
+focal_loss:
+  enabled: false
+  gamma: 2.0
+  alpha: 0.25
+
 output:
   save_models: true
   xgboost_model_path: "xgboost_pneumothorax_optuna.json"
