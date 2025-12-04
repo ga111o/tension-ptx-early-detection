@@ -1,10 +1,3 @@
-"""
-Preprocessing Module
-Load Engineered Feature CSV
-Handle missing values with Greedy sample removal and MICE imputation
-Save preprocessed Feature CSV
-"""
-
 import warnings
 from typing import Dict, List, Optional, Tuple
 
@@ -20,12 +13,10 @@ ENGINEERED_FEATURES_PATH = "data/features_engineered.csv"
 PREPROCESSED_FEATURES_PATH = "data/features_preprocessed.csv"
 
 def get_feature_columns(df: pd.DataFrame) -> List[str]:
-    """Extract feature columns only"""
     meta_cols = {"subject_id", "hadm_id", "label", "cohort_type", "group_label", "ref_time", "window_start"}
     return [c for c in df.columns if c not in meta_cols]
 
 def _get_group_label(label: int) -> str:
-    """Convert label to group_label"""
     return "experimental" if label == 1 else "control"
 
 def analyze_missing_by_group(
@@ -35,7 +26,6 @@ def analyze_missing_by_group(
     experimental_threshold: float = 85.0,
     verbose: bool = False,
 ) -> Dict:
-    """Analyze missing rate by group"""
     thresholds = {"control": control_threshold, "experimental": experimental_threshold}
     result = {}
 
@@ -53,23 +43,20 @@ def analyze_missing_by_group(
         result[group] = {"count": len(group_df), "threshold": threshold, "exceeding_features": exceeding}
 
         if verbose:
-            print(f"\n{group.upper()} Samples: {len(group_df)}, Features exceeding threshold: {len(exceeding)}")
+            print(f"\n{group.upper()} samples: {len(group_df)}, features exceeding threshold: {len(exceeding)}")
 
     return result
 
 
 def print_missing_summary(df: pd.DataFrame, feature_cols: Optional[List[str]] = None):
-    """Print missing value summary"""
     if feature_cols is None:
         feature_cols = get_feature_columns(df)
-    
-    print("\nMissing value summary")
-    
+        
     missing_rates = df[feature_cols].isna().mean() * 100
-    print(f"Overall average missing rate: {missing_rates.mean():.2f}%")
-    print(f"Missing rate range: {missing_rates.min():.2f}% ~ {missing_rates.max():.2f}%")
+    print(f"overall average missing rate: {missing_rates.mean():.2f}%")
+    print(f"missing rate range: {missing_rates.min():.2f}% ~ {missing_rates.max():.2f}%")
     
-    for group_name, label_filter in [("Experimental label=1", df["label"] == 1), ("Control label!=1", df["label"] != 1)]:
+    for group_name, label_filter in [("experimental label=1", df["label"] == 1), ("control label!=1", df["label"] != 1)]:
         group_df = df[label_filter]
         if len(group_df) > 0:
             group_missing = group_df[feature_cols].isna().mean() * 100
@@ -141,7 +128,6 @@ def get_usable_features(
     experimental_threshold: float = 85.0,
     verbose: bool = True,
 ) -> List[str]:
-    """Filter features meeting group-specific thresholds"""
     control_df = df[df["label"] != 1]
     exp_df = df[df["label"] == 1]
 

@@ -21,17 +21,6 @@ from .preprocessing_utils import apply_resampling
 
 
 def suggest_param(trial: optuna.Trial, name: str, param_cfg: DictConfig):
-    """
-    Suggest parameter value based on configuration
-
-    Args:
-        trial: Optuna trial
-        name: Parameter name
-        param_cfg: Parameter configuration
-
-    Returns:
-        Suggested parameter value
-    """
     param_type = param_cfg.get("type", "float")
 
     if param_type == "int":
@@ -53,15 +42,6 @@ def suggest_param(trial: optuna.Trial, name: str, param_cfg: DictConfig):
 
 
 def create_sampler(sampler_cfg: DictConfig):
-    """
-    Create Optuna sampler based on configuration
-
-    Args:
-        sampler_cfg: Sampler configuration
-
-    Returns:
-        Optuna sampler
-    """
     sampler_type = sampler_cfg.get("type", "TPESampler")
     seed = sampler_cfg.get("seed", 42)
 
@@ -78,15 +58,6 @@ def create_sampler(sampler_cfg: DictConfig):
 
 
 def create_pruner(pruner_cfg: DictConfig):
-    """
-    Create Optuna pruner based on configuration
-
-    Args:
-        pruner_cfg: Pruner configuration
-
-    Returns:
-        Optuna pruner
-    """
     pruner_type = pruner_cfg.get("type", "MedianPruner")
 
     if pruner_type == "MedianPruner":
@@ -117,20 +88,6 @@ def _create_objective(
     cfg: DictConfig,
     model_cfg: DictConfig,
 ) -> Callable:
-    """
-    Create Optuna objective function
-
-    Args:
-        X: Feature matrix
-        y: Target vector
-        groups: Group labels for GroupKFold
-        model_type: Model type ('xgboost' or 'lightgbm')
-        cfg: Main configuration
-        model_cfg: Model-specific configuration
-
-    Returns:
-        Objective function for Optuna
-    """
     from sklearn.model_selection import GroupKFold
     from sklearn.metrics import precision_recall_curve, recall_score
 
@@ -261,18 +218,6 @@ def optimize_hyperparameters(
     cfg: DictConfig,
     model_cfg: DictConfig,
 ) -> dict:
-    """
-    Optimize hyperparameters using Optuna
-
-    Args:
-        features_df: Feature DataFrame
-        model_type: Model type ('xgboost' or 'lightgbm')
-        cfg: Main configuration
-        model_cfg: Model-specific configuration
-
-    Returns:
-        Optimization results
-    """
     from .gpu_utils import GPU_AVAILABLE, check_gpu_availability
     from .data_utils import get_feature_columns
 

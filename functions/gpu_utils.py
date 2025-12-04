@@ -1,7 +1,3 @@
-"""
-GPU availability checking utilities for XGBoost and LightGBM
-"""
-
 import numpy as np
 import xgboost as xgb
 import lightgbm as lgb
@@ -10,12 +6,6 @@ GPU_AVAILABLE: dict[str, bool] | None = None
 
 
 def check_gpu_availability() -> dict[str, bool]:
-    """
-    Check GPU availability for XGBoost and LightGBM
-
-    Returns:
-        Dictionary with GPU availability status for each library
-    """
     gpu_status = {"xgboost": False, "lightgbm": False}
 
     try:
@@ -43,21 +33,9 @@ def check_gpu_availability() -> dict[str, bool]:
 
 
 def set_gpu_status(status: dict[str, bool]) -> None:
-    """
-    Set the global GPU availability status
-
-    Args:
-        status: GPU availability dictionary
-    """
     global GPU_AVAILABLE
     GPU_AVAILABLE = status
 
 
 def get_gpu_status() -> dict[str, bool] | None:
-    """
-    Get the current GPU availability status
-
-    Returns:
-        Current GPU status dictionary or None if not set
-    """
     return GPU_AVAILABLE

@@ -1,7 +1,3 @@
-"""
-Main ML pipeline utilities
-"""
-
 import json
 import numpy as np
 import pandas as pd
@@ -25,9 +21,6 @@ def run_optimization_pipeline(
     xgb_model_cfg: DictConfig,
     lgb_model_cfg: DictConfig,
 ) -> dict:
-    """
-    Run the complete optimization pipeline including feature selection and hyperparameter optimization
-    """
     pipeline_cfg = cfg.pipeline
     data_cfg = cfg.data
     feature_cfg = cfg.feature_importance
@@ -35,7 +28,6 @@ def run_optimization_pipeline(
 
     feature_cols = get_feature_columns(features_df, meta_cols)
     
-    # Exclude features with '_count' in their names
     feature_cols_filtered = [col for col in feature_cols if '_count' not in col]
     n_excluded = len(feature_cols) - len(feature_cols_filtered)
     if n_excluded > 0:
@@ -144,9 +136,6 @@ def run_optimization_pipeline(
 
 
 def run_pipeline(cfg: DictConfig) -> dict | None:
-    """
-    Run the complete ML pipeline
-    """
     xgb_model_cfg = OmegaConf.load("conf/model/xgboost.yaml")
     lgb_model_cfg = OmegaConf.load("conf/model/lightgbm.yaml")
 
@@ -158,7 +147,6 @@ def run_pipeline(cfg: DictConfig) -> dict | None:
 
     print(f"{pipeline_cfg.n_folds}-Fold Cross-Validation")
 
-    print("\nHydra")
     print(f"Data path: {data_cfg.features_path}")
     print(f"CV Folds: {pipeline_cfg.n_folds}")
     print(f"Resampling: {pipeline_cfg.resampling_method}")
@@ -173,7 +161,6 @@ def run_pipeline(cfg: DictConfig) -> dict | None:
         set_gpu_status(gpu_status)
     else:
         set_gpu_status({"xgboost": False, "lightgbm": False})
-        print("\nCPU only")
 
     features_df = load_preprocessed_features(data_cfg.features_path, meta_cols)
 

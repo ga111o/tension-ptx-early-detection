@@ -1,7 +1,3 @@
-"""
-Ensemble model utilities
-"""
-
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score, roc_auc_score
@@ -14,18 +10,6 @@ def optimize_ensemble_weights(
     p2: np.ndarray,
     cfg: DictConfig
 ) -> float:
-    """
-    Optimize weights for Soft Voting ensemble
-
-    Args:
-        y_true: True labels
-        p1: Predictions from model 1
-        p2: Predictions from model 2
-        cfg: Ensemble configuration
-
-    Returns:
-        Optimal weight for model 1 (weight for model 2 = 1 - weight)
-    """
     ensemble_cfg = cfg.ensemble
     metric_name = ensemble_cfg.soft_voting_metric
 
@@ -54,17 +38,6 @@ def train_stacking_model(
     y_train: np.ndarray,
     cfg: DictConfig
 ) -> LogisticRegression:
-    """
-    Train stacking meta model (Logistic Regression)
-
-    Args:
-        X_meta_train: Meta features for training
-        y_train: Training labels
-        cfg: Ensemble configuration
-
-    Returns:
-        Trained meta model
-    """
     ensemble_cfg = cfg.ensemble
 
     meta_model = LogisticRegression(

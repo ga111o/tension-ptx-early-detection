@@ -1,7 +1,3 @@
-"""
-Model training utilities for XGBoost and LightGBM
-"""
-
 import numpy as np
 from typing import Dict, Optional
 
@@ -25,23 +21,6 @@ def train_xgboost(
     use_gpu: bool = True,
     random_seed: int = 42,
 ) -> xgb.XGBClassifier:
-    """
-    Train XGBoost model
-
-    Args:
-        X_train: Training features
-        y_train: Training labels
-        X_val: Validation features
-        y_val: Validation labels
-        model_cfg: Model configuration
-        params: Additional parameters to override defaults
-        use_cost_sensitive: Whether to use cost-sensitive learning
-        use_gpu: Whether to use GPU if available
-        random_seed: Random seed
-
-    Returns:
-        Trained XGBoost model
-    """
     scale_pos_weight = (len(y_train) - sum(y_train)) / max(sum(y_train), 1)
 
     default_params = OmegaConf.to_container(model_cfg.default_params, resolve=True)
@@ -82,9 +61,6 @@ def train_lightgbm(
     use_gpu: bool = True,
     random_seed: int = 42,
 ) -> lgb.LGBMClassifier:
-    """
-    Train LightGBM model
-    """
     scale_pos_weight = (len(y_train) - sum(y_train)) / max(sum(y_train), 1)
 
     default_params = OmegaConf.to_container(model_cfg.default_params, resolve=True)
@@ -141,24 +117,6 @@ def train_with_best_params(
     use_gpu: bool = True,
     random_seed: int = 42,
 ):
-    """
-    Train model with best parameters from optimization
-
-    Args:
-        X_train: Training features
-        y_train: Training labels
-        X_val: Validation features
-        y_val: Validation labels
-        best_params: Best parameters from optimization
-        model_type: Model type ('xgboost' or 'lightgbm')
-        model_cfg: Model configuration
-        use_cost_sensitive: Whether to use cost-sensitive learning
-        use_gpu: Whether to use GPU if available
-        random_seed: Random seed
-
-    Returns:
-        Trained model
-    """
     if model_type.lower() == "xgboost":
         return train_xgboost(X_train, y_train, X_val, y_val, model_cfg, cfg, best_params, use_cost_sensitive, use_gpu, random_seed)
     elif model_type.lower() == "lightgbm":
@@ -174,19 +132,6 @@ def find_optimal_threshold(
     method: str,
     default_threshold: float,
 ) -> tuple[float, Dict]:
-    """
-    Find optimal classification threshold based on various methods
-
-    Args:
-        y_true: True labels
-        y_prob: Predicted probabilities
-        target_recall: Target recall for 'target_recall' method
-        method: Threshold selection method
-        default_threshold: Default threshold to use if method fails
-
-    Returns:
-        Optimal threshold and metrics dictionary
-    """
     from sklearn.metrics import precision_recall_curve, roc_curve, precision_score, recall_score, f1_score
 
     precision_arr, recall_arr, thresholds_pr = precision_recall_curve(y_true, y_prob)

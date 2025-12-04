@@ -139,7 +139,6 @@ def _filter_by_reference_time(
     ref_times: pd.DataFrame,
     window_hours: float = 3.0,
 ) -> pd.DataFrame:
-    """Filter data within window_hours from reference_time"""
     window_delta = timedelta(hours=window_hours)
     
     filtered_rows = []

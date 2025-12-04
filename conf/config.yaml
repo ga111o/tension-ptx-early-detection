@@ -39,17 +39,17 @@ feature_importance:
   permutation:
     enabled: true
     n_repeats: 5
-    importance_threshold: 0.0  # 이 값 이하의 importance를 가진 피처 제거
-    min_features: 10  # 최소 유지할 피처 수
+    importance_threshold: 0.0
+    min_features: 10
   rfe:
     enabled: false
-    step: 5  # 한 번에 제거할 피처 수
-    min_features: 10  # 최소 유지할 피처 수
-    performance_tolerance: 0.01  # 성능 감소 허용치 (AUPRC 기준)
+    step: 5
+    min_features: 10
+    performance_tolerance: 0.01
   null_importance:
     enabled: false
-    n_runs: 10  # Null Importance 계산 반복 횟수
-    threshold_percentile: 95  # 제거 임계값 백분위수
+    n_runs: 10
+    threshold_percentile: 95
 
 optuna:
   n_trials: 100
@@ -63,13 +63,13 @@ optuna:
     n_startup_trials: 5
     n_warmup_steps: 2
   direction: "maximize"
-  metric: "logloss"  # logloss, auprc, auroc, recall 등
+  metric: "logloss"
 
 ensemble:
-  soft_voting_metric: "auroc"  # 가중치 최적화에 사용할 메트릭 (auroc, auprc)
-  stacking_solver: "lbfgs"     # 메타모델 solver (lbfgs, liblinear, newton-cg 등)
-  stacking_C: 1.0             # 메타모델 규제 강도 (값이 작을수록 강한 규제)
-  stacking_random_state: 42    # 메타모델 random state
+  soft_voting_metric: "auroc"
+  stacking_solver: "lbfgs"
+  stacking_C: 1.0
+  stacking_random_state: 42
 
 focal_loss:
   enabled: false

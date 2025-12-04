@@ -1,7 +1,3 @@
-"""
-Cross-validation utilities
-"""
-
 import numpy as np
 import pandas as pd
 from typing import Dict, List
@@ -27,7 +23,6 @@ def run_cross_validation(
     xgb_model_cfg: DictConfig,
     lgb_model_cfg: DictConfig,
 ) -> Dict:
-    """GroupKFold Cross-Validation"""
     global GPU_AVAILABLE
     pipeline_cfg = cfg.pipeline
     data_cfg = cfg.data
@@ -44,7 +39,6 @@ def run_cross_validation(
 
     if use_gpu and GPU_AVAILABLE is None:
         from .gpu_utils import check_gpu_availability
-        print("\nCheck GPU")
         GPU_AVAILABLE = check_gpu_availability()
 
     from .data_utils import get_feature_columns
@@ -53,7 +47,7 @@ def run_cross_validation(
     y = features_df["label"].values
     groups = features_df["subject_id"].values
 
-    print(f"Data: {len(y)} (Pos={sum(y)}, Neg={len(y) - sum(y)}), Features: {len(feature_cols)}")
+    print(f"data: {len(y)} (positive={sum(y)}, negative={len(y) - sum(y)}), Features: {len(feature_cols)}")
 
     gkf = GroupKFold(n_splits=n_folds)
     cv_results = {
@@ -156,9 +150,6 @@ def _run_cv_with_best_params(
     xgb_model_cfg: DictConfig,
     lgb_model_cfg: DictConfig,
 ) -> Dict:
-    """
-    Run cross-validation with best parameters and ensemble methods
-    """
     pipeline_cfg = cfg.pipeline
     data_cfg = cfg.data
     meta_cols = list(data_cfg.meta_cols)

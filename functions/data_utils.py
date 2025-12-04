@@ -1,22 +1,8 @@
-"""
-Data loading and feature extraction utilities
-"""
-
 import pandas as pd
 from typing import List
 
 
 def load_preprocessed_features(path: str, meta_cols: List[str]) -> pd.DataFrame:
-    """
-    Load preprocessed features from CSV file
-
-    Args:
-        path: Path to the features CSV file
-        meta_cols: List of metadata column names to exclude from features
-
-    Returns:
-        DataFrame containing the loaded features
-    """
     print(f"\nLoading preprocessed features: {path}")
     df = pd.read_csv(path)
 
@@ -37,14 +23,4 @@ def load_preprocessed_features(path: str, meta_cols: List[str]) -> pd.DataFrame:
 
 
 def get_feature_columns(df: pd.DataFrame, meta_cols: List[str]) -> List[str]:
-    """
-    Extract feature column names from DataFrame, excluding metadata columns
-
-    Args:
-        df: DataFrame containing features and metadata
-        meta_cols: List of metadata column names to exclude
-
-    Returns:
-        List of feature column names
-    """
     return [c for c in df.columns if c not in meta_cols]

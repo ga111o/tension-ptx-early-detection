@@ -1,7 +1,3 @@
-"""
-Preprocessing utilities for data imputation, scaling, and resampling
-"""
-
 import numpy as np
 import pandas as pd
 from typing import Tuple
@@ -20,19 +16,6 @@ def apply_resampling(
     random_seed: int,
     resampling_cfg: DictConfig,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Apply resampling to balance the dataset
-
-    Args:
-        X: Feature matrix
-        y: Target vector
-        method: Resampling method ('none', 'smote', 'adasyn')
-        random_seed: Random seed for reproducibility
-        resampling_cfg: Resampling configuration
-
-    Returns:
-        Resampled X and y
-    """
     if method == "none":
         return X, y
 
@@ -58,19 +41,6 @@ def apply_preprocessing(
     imputer_strategy: str = "mean",
     use_iterative_imputer: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, StandardScaler, SimpleImputer | IterativeImputer]:
-    """
-    Apply imputation and scaling preprocessing
-
-    Args:
-        X_train: Training features
-        X_test: Test features
-        imputer_strategy: Imputation strategy for SimpleImputer
-        use_iterative_imputer: Whether to use IterativeImputer instead of SimpleImputer
-
-    Returns:
-        Processed X_train, X_test, scaler, and imputer objects
-    """
-    # Imputation
     if use_iterative_imputer:
         imputer = IterativeImputer(random_state=42, max_iter=10)
     else:
@@ -80,7 +50,6 @@ def apply_preprocessing(
         X_train = imputer.fit_transform(X_train)
         X_test = imputer.transform(X_test)
 
-    # Scaling
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
@@ -97,27 +66,9 @@ def preprocess_for_training(
     random_seed: int = 42,
     resampling_cfg: DictConfig = None,
 ) -> Tuple[np.ndarray, np.ndarray, StandardScaler, SimpleImputer | IterativeImputer]:
-    """
-    Complete preprocessing pipeline for training data
-
-    Args:
-        X: Feature matrix
-        y: Target vector
-        imputer_strategy: Imputation strategy
-        use_iterative_imputer: Whether to use IterativeImputer
-        resampling_method: Resampling method
-        random_seed: Random seed
-        resampling_cfg: Resampling configuration
-
-    Returns:
-        Processed X, y, scaler, and imputer
-    """
-    # Imputation and scaling (dummy X_test for compatibility)
     X_proc, _, scaler, imputer = apply_preprocessing(
         X, X, imputer_strategy, use_iterative_imputer
     )
-
-    # Resampling
     if resampling_cfg is not None:
         X_proc, y_proc = apply_resampling(X_proc, y, resampling_method, random_seed, resampling_cfg)
     else:

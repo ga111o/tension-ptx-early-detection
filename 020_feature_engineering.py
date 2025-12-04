@@ -1,11 +1,3 @@
-"""
-Medical Feature Engineering Module Advanced
-Convert Raw Feature CSV long format to Wide format
-Domain knowledge derived variables MAP SHOCK_INDEX ROX etc
-Advanced Time-series Analysis Entropy RMSSD Kurtosis Statistical Tests
-Generate final Feature DataFrame
-"""
-
 import warnings
 from typing import Dict, List, Optional
 
@@ -19,7 +11,6 @@ RAW_FEATURES_PATH = "data/features_raw.csv"
 ENGINEERED_FEATURES_PATH = "data/features_engineered.csv"
 
 def load_raw_features(input_path: str = RAW_FEATURES_PATH) -> pd.DataFrame:
-    """Load Raw Feature CSV"""
     print(f"\nLoading Raw Features: {input_path}")
     df = pd.read_csv(input_path)
     df["charttime"] = pd.to_datetime(df["charttime"])
@@ -28,7 +19,6 @@ def load_raw_features(input_path: str = RAW_FEATURES_PATH) -> pd.DataFrame:
 
 
 def pivot_to_wide_format(df: pd.DataFrame) -> pd.DataFrame:
-    """Convert Long format to Wide format"""
     print("\nConverting Long to Wide Format")
     df = df.copy()
     df["patient_key"] = df["subject_id"].astype(str) + "_" + df["hadm_id"].astype(str)
@@ -46,10 +36,6 @@ def pivot_to_wide_format(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def calculate_derived_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Calculate composite indicators using medical domain knowledge
-    """
-    print("\nCalculating derived features")
     df = df.copy()
     
     if "SBP" in df.columns and "DBP" in df.columns:
@@ -86,12 +72,6 @@ def calculate_derived_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def calculate_sample_entropy(L: np.array, m: int = 2, r: float = 0.2) -> float:
-    """
-    Calculate Sample Entropy SampEn
-    Measure complexity of biological signals
-    Low values near 0: highly regular repetitive signals possible pathological state
-    Moderately high values: healthy physiological chaos state
-    """
     L = np.array(L)
     N = len(L)
     if N < m + 1:
@@ -119,14 +99,6 @@ def calculate_advanced_ts_patterns(
     vital_cols: List[str],
     prefix: str = ""
 ) -> Dict[str, float]:
-    """
-    Extract time-series patterns and statistical test statistics
-    
-    1. Distribution Shape: Skewness, Kurtosis
-    2. Variability Dynamics: RMSSD, MAD
-    3. Complexity: Sample Entropy
-    4. Statistical Trend: Mann-Kendall Tau, Shapiro-Wilk P-value
-    """
     features = {}
     
     for col in vital_cols:
@@ -175,7 +147,6 @@ def calculate_time_window_features(
     vital_cols: List[str],
     windows_minutes: List[int] = [30, 60, 120]
 ) -> Dict[str, float]:
-    """Generate advanced features based on time windows"""
     window_dict = {}
     
     if "minutes_before_ref" not in patient_df.columns:
@@ -200,9 +171,6 @@ def aggregate_patient_features(
     vital_cols: Optional[List[str]] = None,
     windows_minutes: List[int] = [30, 60, 120],
 ) -> pd.DataFrame:
-    """Aggregate all features per patient with advanced analysis"""
-    print("\nAggregating patient features")
-    
     if vital_cols is None:
         vital_cols = [
             "HR", "RR", "SpO2", "SBP", "DBP", "MAP", "PP", 
@@ -245,10 +213,6 @@ def run_feature_engineering(
     windows_minutes: List[int] = [30, 60, 120],
 ) -> pd.DataFrame:
     
-    print("=" * 60)
-    print("Advanced Medical Feature Engineering Pipeline")
-    print("=" * 60)
-    
     raw_df = load_raw_features(input_path)
     wide_df = pivot_to_wide_format(raw_df)
     
@@ -257,18 +221,13 @@ def run_feature_engineering(
     feature_df = aggregate_patient_features(wide_df, windows_minutes=windows_minutes)
     
     feature_df.to_csv(output_path, index=False)
-    
-    print("\n" + "=" * 60)
-    print("Feature Engineering Complete")
-    print("=" * 60)
-    
+        
     cols = [c for c in feature_df.columns if c not in ["subject_id", "hadm_id", "label"]]
     
-    print("\nGenerated feature groups:")
-    print(f"  - Shape (Skew/Kurt): {[c for c in cols if 'skew' in c or 'kurt' in c][:3]} ...")
-    print(f"  - Variability (RMSSD/MAD): {[c for c in cols if 'rmssd' in c or 'mad' in c][:3]} ...")
-    print(f"  - Complexity (SampEn): {[c for c in cols if 'sampen' in c][:3]} ...")
-    print(f"  - Trend (Kendall): {[c for c in cols if 'trend' in c][:3]} ...")
+    print(f"shape (skew/kurt): {[c for c in cols if 'skew' in c or 'kurt' in c][:3]} ...")
+    print(f"variability (rmssd/mad): {[c for c in cols if 'rmssd' in c or 'mad' in c][:3]} ...")
+    print(f"complexity (sampen): {[c for c in cols if 'sampen' in c][:3]} ...")
+    print(f"trend (kendall): {[c for c in cols if 'trend' in c][:3]} ...")
     
     return feature_df
 

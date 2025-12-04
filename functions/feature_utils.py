@@ -15,18 +15,6 @@ from .preprocessing_utils import apply_preprocessing, apply_resampling
 
 
 def get_feature_importance(model, feature_names: List[str], model_name: str, top_n: int) -> pd.DataFrame:
-    """
-    Extract feature importance from trained model
-
-    Args:
-        model: Trained model (XGBoost, LightGBM, etc.)
-        feature_names: List of feature names
-        model_name: Name of the model for logging
-        top_n: Number of top features to display
-
-    Returns:
-        DataFrame with feature importance scores
-    """
     if hasattr(model, 'feature_importance'):
         importance_values = model.feature_importance(importance_type='gain')
 
@@ -38,13 +26,9 @@ def get_feature_importance(model, feature_names: List[str], model_name: str, top
             importance_values[i] = importance_dict.get(f'f{i}', 0.0)
 
     else:
-        # LightGBM with custom objective: use booster's feature_importance directly
         if hasattr(model, 'booster_'):
-            # LGBMClassifier: extract from underlying booster
-            # importance_type='gain' is more robust with custom objectives
             importance_values = model.booster_.feature_importance(importance_type='gain')
         else:
-            # XGBClassifier or other sklearn models
             importance_values = model.feature_importances_
 
     importance_df = pd.DataFrame({
@@ -67,21 +51,6 @@ def calculate_permutation_importance(
     n_repeats: int = 5,
     random_state: int = 42,
 ) -> pd.DataFrame:
-    """
-    Calculate permutation importance
-
-    Args:
-        model: Trained model
-        X: Feature matrix
-        y: Target vector
-        feature_names: Feature names
-        model_name: Model name for logging
-        n_repeats: Number of permutation repeats
-        random_state: Random state
-
-    Returns:
-        DataFrame with permutation importance scores
-    """
     print(f"\nPermutation Importance {model_name} - calculating n_repeats={n_repeats}")
 
     perm_importance = permutation_importance(
@@ -115,23 +84,6 @@ def select_features_by_permutation_importance(
     n_repeats: int = 5,
     random_state: int = 42,
 ) -> Tuple[List[str], np.ndarray]:
-    """
-    Remove features with low permutation importance
-
-    Args:
-        model: Trained model
-        X: Feature matrix
-        y: Target vector
-        feature_names: Feature names
-        model_name: Model name
-        importance_threshold: Threshold for feature removal
-        min_features: Minimum number of features to keep
-        n_repeats: Number of permutation repeats
-        random_state: Random state
-
-    Returns:
-        Selected feature names and corresponding data
-    """
     print(f"\nFeature Selection {model_name} - Permutation Importance based removal")
     print(f"Threshold: {importance_threshold}, Min Features: {min_features}")
 
@@ -172,23 +124,8 @@ def select_features_rfe(
     cfg,
     xgb_model_cfg,
 ) -> List[str]:
-    """
-    Recursive Feature Elimination based feature selection
-
-    Args:
-        features_df: Full feature DataFrame
-        feature_cols: Feature column names
-        meta_cols: Metadata column names
-        cfg: Configuration
-        xgb_model_cfg: XGBoost model configuration
-
-    Returns:
-        Selected feature names
-    """
     pipeline_cfg = cfg.pipeline
     feature_cfg = cfg.feature_importance
-
-    print("\nRFE based feature selection - iterative feature elimination")
 
     X_full = features_df[feature_cols].values
     y = features_df["label"].values
@@ -295,23 +232,8 @@ def select_features_null_importance(
     cfg,
     xgb_model_cfg,
 ) -> List[str]:
-    """
-    Null Importance based feature selection
-
-    Args:
-        features_df: Full feature DataFrame
-        feature_cols: Feature column names
-        meta_cols: Metadata column names
-        cfg: Configuration
-        xgb_model_cfg: XGBoost model configuration
-
-    Returns:
-        Selected feature names
-    """
     pipeline_cfg = cfg.pipeline
     feature_cfg = cfg.feature_importance
-
-    print("\nNull Importance based feature selection")
 
     X = features_df[feature_cols].values
     y = features_df["label"].values
@@ -431,19 +353,6 @@ def select_features_cv_based(
     cfg,
     xgb_model_cfg,
 ) -> List[str]:
-    """
-    CV-based feature selection (data leakage prevention)
-
-    Args:
-        features_df: Full feature DataFrame
-        feature_cols: Feature column names
-        meta_cols: Metadata column names
-        cfg: Configuration
-        xgb_model_cfg: XGBoost model configuration
-
-    Returns:
-        Selected feature names
-    """
     pipeline_cfg = cfg.pipeline
     feature_cfg = cfg.feature_importance
 
@@ -488,7 +397,6 @@ def select_features_cv_based(
     avg_importance_df = pd.concat(fold_importances, axis=1).mean(axis=1).reset_index()
     avg_importance_df.columns = ['feature', 'importance_mean']
 
-    print("\nCV average feature importance Top 20")
     print(avg_importance_df.sort_values('importance_mean', ascending=False).head(20).to_string(index=False))
     importance_threshold = feature_cfg.permutation.importance_threshold
     min_features = feature_cfg.permutation.min_features

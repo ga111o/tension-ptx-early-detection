@@ -1,14 +1,8 @@
-"""
-Main ML pipeline execution script
-Refactored version with modular components
-"""
-
 import warnings
 import logging
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-# Import modular components
 from functions.pipeline import run_pipeline
 
 warnings.filterwarnings("ignore")

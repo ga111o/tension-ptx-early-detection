@@ -1,0 +1,484 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{siunitx}
+\usepackage{seqsplit}
+\usepackage{kotex}
+\usepackage{hyperref}
+\usepackage{float}  
+\usepackage{graphicx}
+
+\usepackage{fontspec}
+\setmainfont{Noto Serif CJK KR}
+
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{\textbf{Appendix: Tension PTX Early Detection}}
+\author{DataAnalytics Team7}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\appendix
+
+\section{Experimental Configuration}
+
+\subsection{Computing Environment}
+
+\subsubsection{Hardware Specifications}
+
+\begin{itemize}
+    \item \textbf{CPU}: AMD Ryzen 9 5900X (12-core, 24-thread)
+    \item \textbf{Memory}: 64GB RAM
+    \item \textbf{GPU}: NVIDIA GeForce RTX 3080
+    \item \textbf{Operating System}: Linux x86\_64
+\end{itemize}
+
+\subsubsection{Software Configuration}
+
+The experiments were conducted with the following computational setup:
+
+\begin{itemize}
+    \item \textbf{XGBoost}: CUDA-accelerated training using GPU
+    \item \textbf{LightGBM}: CPU-only training (GPU Tree Learner not enabled)
+    \item \textbf{Cross-Validation}: 5-fold stratified cross-validation
+    \item \textbf{Optuna Trials}: 100 trials per model
+    \item \textbf{Feature Selection}: Permutation importance-based (3-fold CV)
+    \item \textbf{Total Features}: 156 engineered features to 76 selected features (36.7\% reduction)
+\end{itemize}
+
+\subsection{Hydra Configuration}
+
+The complete Hydra configuration used for the experiments:
+
+\begin{table}[H]
+\centering
+\caption{Data and Pipeline Configuration}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Features Path & data/features\_preprocessed.csv \\
+Output Directory & data \\
+Meta Columns & subject\_id, hadm\_id, label \\
+CV Folds & 5 \\
+Resampling Method & none \\
+Cost-Sensitive Learning & True \\
+Use GPU & True \\
+Target Recall & 0.8 \\
+Threshold Method & f1 \\
+Random Seed & 42 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Imputation and Threshold Configuration}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Imputer Strategy & median \\
+Iterative Max Iterations & 10 \\
+Default Threshold & 0.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Feature Importance Configuration}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Top N Features & 20 \\
+Permutation Enabled & True \\
+Permutation Repeats & 5 \\
+Importance Threshold & 0.0 \\
+Minimum Features & 10 \\
+RFE Enabled & False \\
+Null Importance Enabled & False \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Optuna Hyperparameter Optimization Configuration}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Number of Trials & 100 \\
+Timeout & null \\
+Number of Jobs & 1 \\
+Sampler Type & TPESampler \\
+Sampler Seed & 42 \\
+Startup Trials & 10 \\
+Multivariate & False \\
+Pruner Type & MedianPruner \\
+Pruner Startup Trials & 5 \\
+Warmup Steps & 2 \\
+Interval Steps & 1 \\
+Optimization Direction & maximize \\
+Optimization Metric & recall \\
+Show Progress Bar & True \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Ensemble Configuration}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Soft Voting Metric & AUROC \\
+Stacking Solver & lbfgs \\
+Stacking C & 1.0 \\
+Stacking Random State & 42 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Optimal Hyperparameters}
+
+\subsection{XGBoost Hyperparameters}
+
+The optimal hyperparameters found by Optuna for XGBoost (Trial 69, Best Recall: 1.0164):
+
+\begin{table}[H]
+\centering
+\caption{Optimal XGBoost Hyperparameters}
+\begin{tabular}{lc}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+n\_estimators & 158 \\
+max\_depth & 4 \\
+learning\_rate & 0.041089 \\
+subsample & 0.881951 \\
+colsample\_bytree & 0.617206 \\
+reg\_alpha & 6.295268 \\
+reg\_lambda & 0.177507 \\
+min\_child\_weight & 1 \\
+gamma & 0.587449 \\
+pos\_weight\_multiplier & 13.208315 \\
+tree\_method & hist \\
+device & cuda \\
+objective & binary:logistic \\
+eval\_metric & auc \\
+early\_stopping\_rounds & 30 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{LightGBM Hyperparameters}
+
+The optimal hyperparameters found by Optuna for LightGBM (Trial 88, Best Recall: 1.0837):
+
+\begin{table}[H]
+\centering
+\caption{Optimal LightGBM Hyperparameters}
+\begin{tabular}{lc}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+n\_estimators & 263 \\
+max\_depth & 7 \\
+learning\_rate & 0.012187 \\
+subsample & 0.651025 \\
+colsample\_bytree & 0.999829 \\
+reg\_alpha & 9.807521 \\
+reg\_lambda & 5.234899 \\
+min\_child\_samples & 27 \\
+num\_leaves & 48 \\
+min\_split\_gain & 0.688953 \\
+pos\_weight\_multiplier & 17.688157 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Ensemble Weights}
+
+\begin{table}[H]
+\centering
+\caption{Global Optimization Ensemble Weights}
+\begin{tabular}{lc}
+\toprule
+\textbf{Model} & \textbf{Weight} \\
+\midrule
+XGBoost & 0.96 \\
+LightGBM & 0.04 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Feature Importance}
+
+\subsection{XGBoost Feature Importance}
+
+Complete feature importance scores from XGBoost model (76 features):
+
+\begin{table}[H]
+\centering
+\small
+\caption{XGBoost Feature Importance (All 76 Features)}
+\begin{tabular}{lc}
+\toprule
+\textbf{Feature} & \textbf{Importance} \\
+\midrule
+w120\_RR\_kurt & 0.041717 \\
+all\_SHOCK\_INDEX\_kurt & 0.030034 \\
+all\_RR\_kurt & 0.029135 \\
+w120\_SpO2\_mad & 0.026487 \\
+w120\_DBP\_kurt & 0.024531 \\
+w120\_PP\_kurt & 0.024108 \\
+all\_SHOCK\_INDEX\_mad & 0.022697 \\
+all\_DBP\_mad & 0.021445 \\
+all\_SHOCK\_INDEX\_trend\_p & 0.020849 \\
+all\_SpO2\_kurt & 0.019561 \\
+w120\_SBP\_kurt & 0.018915 \\
+w120\_HR\_kurt & 0.018896 \\
+all\_SBP\_kurt & 0.017207 \\
+w120\_SpO2\_rmssd & 0.016343 \\
+w120\_PP\_normality\_p & 0.015964 \\
+w120\_SBP\_trend\_tau & 0.015631 \\
+w120\_RR\_normality\_p & 0.015216 \\
+all\_SBP\_trend\_tau & 0.015001 \\
+w120\_SpO2\_trend\_tau & 0.014211 \\
+w120\_RR\_trend\_p & 0.014108 \\
+all\_MAP\_skew & 0.013751 \\
+w120\_PP\_rmssd & 0.013186 \\
+all\_RR\_trend\_tau & 0.013126 \\
+all\_SHOCK\_INDEX\_skew & 0.013052 \\
+all\_HR\_normality\_p & 0.012689 \\
+w120\_SpO2\_skew & 0.012551 \\
+all\_SpO2\_skew & 0.012390 \\
+all\_PP\_rmssd & 0.012280 \\
+all\_SpO2\_trend\_p & 0.012086 \\
+w120\_SpO2\_normality\_p & 0.011837 \\
+all\_MAP\_kurt & 0.011802 \\
+w120\_HR\_normality\_p & 0.011669 \\
+all\_SBP\_mad & 0.011481 \\
+all\_DBP\_trend\_tau & 0.011464 \\
+all\_SpO2\_normality\_p & 0.011386 \\
+w120\_PP\_trend\_p & 0.011309 \\
+all\_SHOCK\_INDEX\_rmssd & 0.011159 \\
+w120\_HR\_sampen & 0.011155 \\
+all\_MAP\_mad & 0.011139 \\
+w120\_SBP\_skew & 0.011069 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{XGBoost Feature Importance (continued)}
+\begin{tabular}{lc}
+\toprule
+\textbf{Feature} & \textbf{Importance} \\
+\midrule
+w120\_RR\_skew & 0.011062 \\
+w120\_MAP\_rmssd & 0.011049 \\
+all\_HR\_mad & 0.011015 \\
+all\_HR\_trend\_tau & 0.010759 \\
+all\_HR\_kurt & 0.010500 \\
+all\_HR\_rmssd & 0.010475 \\
+all\_PP\_skew & 0.010436 \\
+all\_PP\_mad & 0.010287 \\
+all\_PP\_trend\_tau & 0.010243 \\
+all\_DBP\_rmssd & 0.010230 \\
+w120\_SpO2\_trend\_p & 0.010227 \\
+all\_SBP\_skew & 0.010192 \\
+all\_DBP\_normality\_p & 0.010149 \\
+all\_SHOCK\_INDEX\_normality\_p & 0.010118 \\
+w120\_DBP\_mad & 0.009885 \\
+w120\_DBP\_rmssd & 0.009775 \\
+w120\_SBP\_rmssd & 0.009606 \\
+w120\_SBP\_trend\_p & 0.009523 \\
+w120\_HR\_trend\_tau & 0.009342 \\
+w120\_HR\_skew & 0.009192 \\
+w120\_HR\_rmssd & 0.009187 \\
+all\_SBP\_rmssd & 0.009180 \\
+all\_SBP\_trend\_p & 0.009122 \\
+w120\_DBP\_trend\_tau & 0.009087 \\
+w120\_PP\_skew & 0.009015 \\
+w120\_PP\_mad & 0.008514 \\
+all\_SHOCK\_INDEX\_trend\_tau & 0.008490 \\
+all\_MAP\_rmssd & 0.008429 \\
+all\_DBP\_kurt & 0.008220 \\
+w120\_RR\_rmssd & 0.008106 \\
+w120\_MAP\_mad & 0.008090 \\
+all\_HR\_skew & 0.007922 \\
+w120\_MAP\_trend\_tau & 0.007899 \\
+w120\_SBP\_mad & 0.007748 \\
+w120\_HR\_trend\_p & 0.007700 \\
+w120\_SpO2\_sampen & 0.006589 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{LightGBM Feature Importance}
+
+Complete feature importance scores from LightGBM model (76 features):
+
+\begin{table}[H]
+\centering
+\small
+\caption{LightGBM Feature Importance (All 76 Features)}
+\begin{tabular}{lc}
+\toprule
+\textbf{Feature} & \textbf{Importance} \\
+\midrule
+all\_DBP\_mad & 1890.921 \\
+all\_SHOCK\_INDEX\_mad & 1755.766 \\
+all\_RR\_kurt & 1451.096 \\
+all\_SHOCK\_INDEX\_kurt & 1299.409 \\
+w120\_MAP\_rmssd & 1242.026 \\
+w120\_HR\_normality\_p & 1130.197 \\
+w120\_SpO2\_skew & 1035.163 \\
+w120\_SpO2\_mad & 1034.648 \\
+w120\_SpO2\_trend\_tau & 985.235 \\
+all\_SpO2\_skew & 939.284 \\
+w120\_SBP\_skew & 805.771 \\
+w120\_SpO2\_rmssd & 799.737 \\
+w120\_PP\_normality\_p & 726.450 \\
+all\_DBP\_normality\_p & 659.169 \\
+w120\_HR\_trend\_p & 641.700 \\
+all\_HR\_mad & 623.114 \\
+w120\_SBP\_trend\_tau & 591.215 \\
+all\_RR\_trend\_tau & 561.206 \\
+w120\_DBP\_trend\_tau & 438.620 \\
+all\_HR\_normality\_p & 389.085 \\
+w120\_HR\_rmssd & 382.264 \\
+w120\_RR\_skew & 348.953 \\
+all\_SHOCK\_INDEX\_trend\_p & 337.694 \\
+all\_SHOCK\_INDEX\_skew & 292.501 \\
+all\_SBP\_kurt & 273.088 \\
+all\_MAP\_kurt & 262.351 \\
+all\_MAP\_skew & 251.157 \\
+w120\_PP\_trend\_p & 241.899 \\
+all\_PP\_mad & 236.646 \\
+w120\_SBP\_kurt & 233.615 \\
+all\_PP\_trend\_tau & 225.770 \\
+w120\_SBP\_rmssd & 214.723 \\
+w120\_DBP\_kurt & 208.040 \\
+all\_SpO2\_kurt & 190.059 \\
+w120\_RR\_kurt & 183.571 \\
+w120\_DBP\_rmssd & 176.812 \\
+all\_MAP\_rmssd & 174.548 \\
+w120\_HR\_trend\_tau & 169.278 \\
+all\_DBP\_kurt & 159.636 \\
+w120\_DBP\_mad & 149.222 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{LightGBM Feature Importance (continued)}
+\begin{tabular}{lc}
+\toprule
+\textbf{Feature} & \textbf{Importance} \\
+\midrule
+all\_SHOCK\_INDEX\_rmssd & 147.889 \\
+w120\_PP\_skew & 131.488 \\
+w120\_PP\_rmssd & 112.416 \\
+w120\_MAP\_trend\_tau & 108.044 \\
+w120\_HR\_skew & 104.496 \\
+all\_MAP\_mad & 100.404 \\
+w120\_RR\_trend\_p & 89.597 \\
+w120\_SpO2\_normality\_p & 89.230 \\
+w120\_HR\_sampen & 86.341 \\
+all\_PP\_rmssd & 84.577 \\
+all\_SBP\_rmssd & 82.738 \\
+all\_DBP\_rmssd & 64.592 \\
+all\_HR\_skew & 63.463 \\
+w120\_SpO2\_trend\_p & 51.135 \\
+all\_PP\_skew & 49.529 \\
+w120\_PP\_mad & 42.321 \\
+w120\_RR\_rmssd & 39.532 \\
+w120\_SBP\_trend\_p & 34.793 \\
+all\_DBP\_trend\_tau & 34.542 \\
+all\_HR\_rmssd & 32.260 \\
+all\_HR\_kurt & 25.777 \\
+all\_SBP\_mad & 18.858 \\
+w120\_HR\_kurt & 18.629 \\
+all\_HR\_trend\_tau & 16.315 \\
+all\_SHOCK\_INDEX\_normality\_p & 16.059 \\
+all\_SpO2\_trend\_p & 12.607 \\
+w120\_MAP\_mad & 9.038 \\
+all\_SBP\_trend\_tau & 6.204 \\
+all\_SpO2\_normality\_p & 0.000 \\
+all\_SHOCK\_INDEX\_trend\_tau & 0.000 \\
+all\_SBP\_trend\_p & 0.000 \\
+all\_SBP\_skew & 0.000 \\
+w120\_SpO2\_sampen & 0.000 \\
+w120\_RR\_normality\_p & 0.000 \\
+w120\_SBP\_mad & 0.000 \\
+w120\_PP\_kurt & 0.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Model Performance Metrics}
+
+\subsection{Cross-Validation Results}
+
+\begin{table}[H]
+\centering
+\caption{5-Fold Cross-Validation Performance (Mean $\pm$ Std)}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Model} & \textbf{AUROC} & \textbf{AUPRC} & \textbf{F1} & \textbf{Precision} & \textbf{Recall} & \textbf{Accuracy} \\
+\midrule
+XGBoost & 0.746 & 0.662 & 0.668 & 0.676 & 0.728 & 0.768 \\
+& $\pm$0.024 & $\pm$0.056 & $\pm$0.052 & $\pm$0.034 & $\pm$0.115 & $\pm$0.029 \\
+LightGBM & 0.710 & 0.641 & 0.629 & 0.651 & 0.684 & 0.734 \\
+& $\pm$0.031 & $\pm$0.065 & $\pm$0.041 & $\pm$0.052 & $\pm$0.114 & $\pm$0.093 \\
+Soft Voting & 0.732 & 0.661 & 0.650 & 0.641 & 0.693 & 0.717 \\
+& $\pm$0.032 & $\pm$0.051 & $\pm$0.047 & $\pm$0.063 & $\pm$0.068 & $\pm$0.062 \\
+Stacking & 0.732 & 0.661 & 0.650 & 0.641 & 0.693 & 0.717 \\
+& $\pm$0.032 & $\pm$0.051 & $\pm$0.047 & $\pm$0.063 & $\pm$0.068 & $\pm$0.062 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Data Statistics}
+
+\begin{table}[H]
+\centering
+\caption{Dataset Statistics}
+\begin{tabular}{lc}
+\toprule
+\textbf{Characteristic} & \textbf{Value} \\
+\midrule
+Total Samples & 900 \\
+Positive Cases (Pneumothorax) & 150 \\
+Negative Cases & 750 \\
+Class Ratio & 1:5 \\
+Total Engineered Features & 156 \\
+Selected Features & 76 \\
+Feature Reduction Rate & 36.7\% \\
+Missing Values & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

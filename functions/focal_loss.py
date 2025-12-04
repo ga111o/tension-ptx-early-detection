@@ -2,8 +2,6 @@ import numpy as np
 from scipy import special
 
 class UnifiedFocalLoss:
-    """Focal Loss compatible with both LightGBM and XGBoost"""
-    
     def __init__(self, gamma=2.0, alpha=0.25):
         self.gamma = gamma
         self.alpha = alpha
@@ -33,13 +31,6 @@ class UnifiedFocalLoss:
 
     
     def lgb_obj(self, preds, train_data):
-        """
-        LightGBM objective function
-        
-        Note:
-        Native API: (preds, train_data) where train_data is Dataset object
-        Sklearn API: (y_true, y_pred) where both are numpy arrays
-        """
         if hasattr(train_data, 'get_label'):
             y_true = train_data.get_label()
             y_logits = preds
@@ -50,7 +41,6 @@ class UnifiedFocalLoss:
         return self._compute_focal_loss_grad_hess(y_true, y_logits)
     
     def lgb_eval(self, preds, train_data):
-        """LightGBM evaluation metric"""
         if hasattr(train_data, 'get_label'):
             y_true = train_data.get_label()
             y_logits = preds
@@ -68,12 +58,10 @@ class UnifiedFocalLoss:
         return 'focal_loss', loss.mean(), False
     
     def xgb_obj(self, preds, dtrain):
-        """XGBoost objective function"""
         y_true = dtrain.get_label()
         return self._compute_focal_loss_grad_hess(y_true, preds)
     
     def xgb_eval(self, preds, dtrain):
-        """XGBoost evaluation metric"""
         y_true = dtrain.get_label()
         p = special.expit(preds)
         p = np.clip(p, 1e-15, 1 - 1e-15)
