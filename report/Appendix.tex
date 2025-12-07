@@ -442,22 +442,29 @@ w120\_PP\_kurt & 0.000 \\
 \subsection{Cross-Validation Results}
 
 \begin{table}[H]
-\centering
-\caption{5-Fold Cross-Validation Performance (Mean $\pm$ Std)}
-\begin{tabular}{lcccccc}
-\toprule
-\textbf{Model} & \textbf{AUROC} & \textbf{AUPRC} & \textbf{F1} & \textbf{Precision} & \textbf{Recall} & \textbf{Accuracy} \\
-\midrule
-XGBoost & 0.746 & 0.662 & 0.668 & 0.676 & 0.728 & 0.768 \\
-& $\pm$0.024 & $\pm$0.056 & $\pm$0.052 & $\pm$0.034 & $\pm$0.115 & $\pm$0.029 \\
-LightGBM & 0.710 & 0.641 & 0.629 & 0.651 & 0.684 & 0.734 \\
-& $\pm$0.031 & $\pm$0.065 & $\pm$0.041 & $\pm$0.052 & $\pm$0.114 & $\pm$0.093 \\
-Soft Voting & 0.732 & 0.661 & 0.650 & 0.641 & 0.693 & 0.717 \\
-& $\pm$0.032 & $\pm$0.051 & $\pm$0.047 & $\pm$0.063 & $\pm$0.068 & $\pm$0.062 \\
-Stacking & 0.732 & 0.661 & 0.650 & 0.641 & 0.693 & 0.717 \\
-& $\pm$0.032 & $\pm$0.051 & $\pm$0.047 & $\pm$0.063 & $\pm$0.068 & $\pm$0.062 \\
-\bottomrule
-\end{tabular}
+    \centering
+    \caption{Model Performance Comparison (Mean $\pm$ SD)}
+    \small
+    \label{tab:results}
+    \begin{tabular}{lcccccc}
+    \toprule
+    \textbf{Model} & \textbf{AUROC} & \textbf{AUPRC} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-score} \\
+    \midrule
+    Baseline (LR) & 0.4989 & 0.5486 & 0.5246 & 0.5417 & 0.4194 & 0.4728 \\
+    \midrule
+    \textbf{XGBoost} & \textbf{0.7457} & \textbf{0.6623} & \textbf{0.7678} & \textbf{0.6764} & \textbf{0.7276} & \textbf{0.7011} \\
+     & \textbf{($\pm$0.0238)} & \textbf{($\pm$0.0563)} & \textbf{($\pm$0.0288)} & \textbf{($\pm$0.0338)} & \textbf{($\pm$0.1147)} & \textbf{($\pm$0.0516)} \\
+    \midrule
+    LightGBM & 0.7103 & 0.6411 & 0.7344 & 0.6512 & 0.6844 & 0.6674 \\
+     & ($\pm$0.0310) & ($\pm$0.0653) & ($\pm$0.0927) & ($\pm$0.0516) & ($\pm$0.1144) & ($\pm$0.0405) \\
+    \midrule
+    Soft Voting & 0.7324 & 0.6607 & 0.7167 & 0.6410 & 0.6934 & 0.6662 \\
+     & ($\pm$0.0324) & ($\pm$0.0511) & ($\pm$0.0621) & ($\pm$0.0625) & ($\pm$0.0682) & ($\pm$0.0465) \\
+    \midrule
+    Stacking & 0.7324 & 0.6607 & 0.7167 & 0.6410 & 0.6934 & 0.6662 \\
+     & ($\pm$0.0324) & ($\pm$0.0511) & ($\pm$0.0621) & ($\pm$0.0625) & ($\pm$0.0682) & ($\pm$0.0465) \\
+    \bottomrule
+    \end{tabular}
 \end{table}
 
 \subsection{Data Statistics}

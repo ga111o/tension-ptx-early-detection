@@ -289,29 +289,29 @@ pos\_weight\_multiplier & 13.21 & 17.69 \\
 5-fold 교차 검증을 통해 평가된 모델별 성능은 Table \ref{tab:results}와 같다.
 
 \begin{table}[H]
-\centering
-\caption{Model Performance Comparison (Mean $\pm$ SD)}
-\small
-\label{tab:results}
-\begin{tabular}{lcccccc}
-\toprule
-\textbf{Model} & \textbf{AUROC} & \textbf{AUPRC} & \textbf{F1-score} & \textbf{Precision} & \textbf{Recall} & \textbf{Accuracy} \\
-\midrule
-Baseline (LR) & 0.4989 & 0.5486 & 0.4727 & 0.5417 & 0.4194 & 0.5246 \\
-\midrule
-\textbf{XGBoost} & \textbf{0.7457} & \textbf{0.6623} & \textbf{0.6679} & \textbf{0.6764} & \textbf{0.7276} & \textbf{0.7678} \\
- & \textbf{($\pm$0.0238)} & \textbf{($\pm$0.0563)} & \textbf{($\pm$0.0516)} & \textbf{($\pm$0.0338)} & \textbf{($\pm$0.1147)} & \textbf{($\pm$0.0288)} \\
-\midrule
-LightGBM & 0.7103 & 0.6411 & 0.6292 & 0.6512 & 0.6844 & 0.7344 \\
- & ($\pm$0.0310) & ($\pm$0.0653) & ($\pm$0.0405) & ($\pm$0.0516) & ($\pm$0.1144) & ($\pm$0.0927) \\
-\midrule
-Soft Voting & 0.7324 & 0.6607 & 0.6502 & 0.6410 & 0.6934 & 0.7167 \\
- & ($\pm$0.0324) & ($\pm$0.0511) & ($\pm$0.0465) & ($\pm$0.0625) & ($\pm$0.0682) & ($\pm$0.0621) \\
-\midrule
-Stacking & 0.7324 & 0.6607 & 0.6502 & 0.6410 & 0.6934 & 0.7167 \\
- & ($\pm$0.0324) & ($\pm$0.0511) & ($\pm$0.0465) & ($\pm$0.0625) & ($\pm$0.0682) & ($\pm$0.0621) \\
-\bottomrule
-\end{tabular}
+    \centering
+    \caption{Model Performance Comparison (Mean $\pm$ SD)}
+    \small
+    \label{tab:results}
+    \begin{tabular}{lcccccc}
+    \toprule
+    \textbf{Model} & \textbf{AUROC} & \textbf{AUPRC} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-score} \\
+    \midrule
+    Baseline (LR) & 0.4989 & 0.5486 & 0.5246 & 0.5417 & 0.4194 & 0.4728 \\
+    \midrule
+    \textbf{XGBoost} & \textbf{0.7457} & \textbf{0.6623} & \textbf{0.7678} & \textbf{0.6764} & \textbf{0.7276} & \textbf{0.7011} \\
+     & \textbf{($\pm$0.0238)} & \textbf{($\pm$0.0563)} & \textbf{($\pm$0.0288)} & \textbf{($\pm$0.0338)} & \textbf{($\pm$0.1147)} & \textbf{($\pm$0.0516)} \\
+    \midrule
+    LightGBM & 0.7103 & 0.6411 & 0.7344 & 0.6512 & 0.6844 & 0.6674 \\
+     & ($\pm$0.0310) & ($\pm$0.0653) & ($\pm$0.0927) & ($\pm$0.0516) & ($\pm$0.1144) & ($\pm$0.0405) \\
+    \midrule
+    Soft Voting & 0.7324 & 0.6607 & 0.7167 & 0.6410 & 0.6934 & 0.6662 \\
+     & ($\pm$0.0324) & ($\pm$0.0511) & ($\pm$0.0621) & ($\pm$0.0625) & ($\pm$0.0682) & ($\pm$0.0465) \\
+    \midrule
+    Stacking & 0.7324 & 0.6607 & 0.7167 & 0.6410 & 0.6934 & 0.6662 \\
+     & ($\pm$0.0324) & ($\pm$0.0511) & ($\pm$0.0621) & ($\pm$0.0625) & ($\pm$0.0682) & ($\pm$0.0465) \\
+    \bottomrule
+    \end{tabular}
 \end{table}
 
 \subsection{Key Predictive Features}
