@@ -1,10 +1,10 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2026/dev/Arch Linux) (preloaded format=xelatex 2025.11.13)  4 DEC 2025 16:51
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2026/dev/Arch Linux) (preloaded format=xelatex 2025.11.13)  8 DEC 2025 02:41
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/home/ga111o/document/tension-ptx-early-detection/report/report
-(/home/ga111o/document/tension-ptx-early-detection/report/report.tex
+**/home/ga111o/document/tension-ptx-early-detection/report/Report
+(/home/ga111o/document/tension-ptx-early-detection/report/Report.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
 (/usr/share/texmf-dist/tex/latex/base/article.cls
@@ -713,8 +713,8 @@ Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 Package translations Info: No language package found. I am going to use `english' as default language. on input line 33.
 \@quotelevel=\count479
 \@quotereset=\count480
- (./report.aux)
-\openout1 = `report.aux'.
+ (./Report.aux)
+\openout1 = `Report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 33.
 LaTeX Font Info:    ... okay on input line 33.
@@ -831,9 +831,9 @@ Package fontspec Info:
 (fontspec)             <->"[UnDotumBold.ttf]/OT:language=dflt;extend=1.05;"
 
 Package hyperref Info: Link coloring OFF on input line 33.
- (./report.out) (./report.out)
+ (./Report.out) (./Report.out)
 \@outlinefile=\write4
-\openout4 = `report.out'.
+\openout4 = `Report.out'.
 
 Package biblatex Info: Trying to load language 'english' -> 'english-apa'...
 Package biblatex Info: ... file 'english-apa.lbx' found.
@@ -861,11 +861,11 @@ Package biblatex Info: XeTeX detected.
 (biblatex)             Assuming input encoding 'utf8'.
 Package biblatex Info: Automatic encoding selection.
 (biblatex)             Assuming data encoding 'utf8'.
-\openout3 = `report.bcf'.
+\openout3 = `Report.bcf'.
 
 Package biblatex Info: Trying to load bibliographic data...
-Package biblatex Info: ... file 'report.bbl' found.
- (./report.bbl)
+Package biblatex Info: ... file 'Report.bbl' found.
+ (./Report.bbl)
 Package biblatex Info: Reference section=0 on input line 33.
 Package biblatex Info: Reference segment=0 on input line 33.
 
@@ -987,51 +987,53 @@ Overfull \hbox (41.33495pt too wide) in paragraph at lines 145--160
 [5]
 
 [6]
-Overfull \hbox (8.48611pt too wide) in paragraph at lines 260--277
+
+[7]
+Overfull \hbox (20.45447pt too wide) in paragraph at lines 296--315
  [][] 
  []
 
 
-Underfull \hbox (badness 1448) in paragraph at lines 290--291
+Underfull \hbox (badness 1448) in paragraph at lines 328--329
 []|\TU/NotoSerifCJKKR(0)/m/n/12 Kurtosis of respiratory rate over the
  []
 
 
-Underfull \hbox (badness 1596) in paragraph at lines 292--293
+Underfull \hbox (badness 1596) in paragraph at lines 330--331
 \TU/NotoSerifCJKKR(0)/m/n/12 lar stress from pneumothorax mani-
  []
 
 
-Underfull \hbox (badness 3735) in paragraph at lines 298--299
+Underfull \hbox (badness 3735) in paragraph at lines 336--337
 []|\TU/NotoSerifCJKKR(0)/m/n/12 Kurtosis of diastolic blood pressure
  []
 
 
-Overfull \hbox (25.44217pt too wide) in paragraph at lines 286--301
+Overfull \hbox (25.44217pt too wide) in paragraph at lines 324--339
  [][] 
  []
 
 
 
-[7]
+[8]
 File: figures/feature_importance_top5.pdf Graphic file (type pdf)
 <use figures/feature_importance_top5.pdf>
 
-
-[8]
 
 [9]
 
 [10]
 
 [11]
-Overfull \hbox (2.21646pt too wide) in paragraph at lines 363--363
+
+[12]
+Overfull \hbox (2.21646pt too wide) in paragraph at lines 403--403
 \TU/NotoSerifCJKKR(0)/m/it/12 semi, M., Moody, B., Szolovits, P., Celi, L. A., & Mark, R. G. (2016). MIMIC-
  []
 
 
 
-[12] (./report.aux)
+[13] (./Report.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -1040,22 +1042,19 @@ L3 programming layer <2025-01-18>
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: E0149BFB1E8BFFE624F917DD8A256275;7715.
-Package logreq Info: Writing requests to 'report.run.xml'.
-\openout1 = `report.run.xml'.
+Package rerunfilecheck Info: File `Report.out' has not changed.
+(rerunfilecheck)             Checksum: 4F67468EE239E44F28A525304EC96A50;7927.
+Package logreq Info: Writing requests to 'Report.run.xml'.
+\openout1 = `Report.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 29474 strings out of 475848
- 582329 string characters out of 5776012
- 1554923 words of memory out of 5000000
- 52103 multiletter control sequences out of 15000+600000
- 568229 words of font info for 102 fonts, out of 8000000 for 9000
+ 29472 strings out of 475848
+ 582287 string characters out of 5776012
+ 1555012 words of memory out of 5000000
+ 52104 multiletter control sequences out of 15000+600000
+ 568221 words of font info for 101 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 108i,12n,121p,748b,5638s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 108i,12n,121p,748b,5642s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on report.pdf (12 pages).
+Output written on Report.pdf (13 pages).
