@@ -2,8 +2,8 @@ This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2026/dev/Arch Linux) (
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**Report.tex
-(./Report.tex
+**report/Report.tex
+(./report/Report.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
 (/usr/share/texmf-dist/tex/latex/base/article.cls
@@ -941,13 +941,15 @@ e=dflt;extend=1.03;"
 (fontspec)             <->"[UnDotumBold.ttf]/OT:language=dflt;extend=1.05;"
 
 Package hyperref Info: Link coloring OFF on input line 33.
- (./Report.out) (./Report.out)
 \@outlinefile=\write4
 \openout4 = `Report.out'.
 
+
+
+Package hyperref Warning: Rerun to get /PageLabels entry.
+
 Package biblatex Info: Trying to load language 'english' -> 'english-apa'...
 Package biblatex Info: ... file 'english-apa.lbx' found.
-
 (/usr/share/texmf-dist/tex/latex/biblatex-apa/english-apa.lbx
 File: english-apa.lbx 2023/03/20 v9.17 APA biblatex localisation
 Package biblatex Info: Trying to load language 'english'...
@@ -979,201 +981,14 @@ Package biblatex Info: Automatic encoding selection.
 \openout3 = `Report.bcf'.
 
 Package biblatex Info: Trying to load bibliographic data...
-Package biblatex Info: ... file 'Report.bbl' found.
- (./Report.bbl)
+Package biblatex Info: ... file 'Report.bbl' not found.
+
+No file Report.bbl.
 Package biblatex Info: Reference section=0 on input line 33.
 Package biblatex Info: Reference segment=0 on input line 33.
-
 *geometry* driver: auto-detecting
 *geometry* detected driver: xetex
 *geometry* verbose mode - [ preamble ] result:
 * driver: xetex
 * paper: a4paper
-* layout: <same size as paper>
-* layoutoffset:(h,v)=(0.0pt,0.0pt)
-* modes: 
-* h-part:(L,W,R)=(72.26999pt, 452.9679pt, 72.26999pt)
-* v-part:(T,H,B)=(72.26999pt, 700.50687pt, 72.26999pt)
-* \paperwidth=597.50787pt
-* \paperheight=845.04684pt
-* \textwidth=452.9679pt
-* \textheight=700.50687pt
-* \oddsidemargin=0.0pt
-* \evensidemargin=0.0pt
-* \topmargin=-37.0pt
-* \headheight=12.0pt
-* \headsep=25.0pt
-* \topskip=12.0pt
-* \footskip=30.0pt
-* \marginparwidth=35.0pt
-* \marginparsep=10.0pt
-* \columnsep=10.0pt
-* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
-* \hoffset=0.0pt
-* \voffset=0.0pt
-* \mag=1000
-* \@twocolumnfalse
-* \@twosidefalse
-* \@mparswitchfalse
-* \@reversemarginfalse
-* (1in=72.27pt=25.4mm, 1cm=28.453pt)
-
-LaTeX Font Info:    Trying to load font information for U+msa on input line 36.
-
-(/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 36.
-
-
-(/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-
-LaTeX Font Warning: Font shape `TU/NotoSerifCJKKR(0)/m/it' undefined
-(Font)              using `TU/NotoSerifCJKKR(0)/m/n' instead on input line 36.
-
-File: figures/pneumothorax.png Graphic file (type bmp)
-<figures/pneumothorax.png>
-
-
-[1
-
-]
-Underfull \hbox (badness 10000) in paragraph at lines 82--82
-[]|\TU/NotoSerifCJKKR(0)/b/n/12 ICD Procedure
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 88--89
-[]|\TU/NotoSerifCJKKR(0)/m/n/12 NegBio Posi-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 91--92
-[]|\TU/NotoSerifCJKKR(0)/m/n/12 NegBio Nega-
- []
-
-
-Overfull \hbox (10.2828pt too wide) in paragraph at lines 80--94
- [][] 
- []
-
-
-
-[2]
-Underfull \hbox (badness 10000) in paragraph at lines 150--151
-[]|\TU/NotoSerifCJKKR(0)/m/n/10.95 Pulse pressure, reflects
- []
-
-
-Underfull \hbox (badness 6461) in paragraph at lines 151--152
-[]|\TU/NotoSerifCJKKR(0)/m/n/10.95 Early warning for acute
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 151--152
-\TU/NotoSerifCJKKR(0)/m/n/10.95 hemorrhage and septic
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 155--156
-[]|\TU/NotoSerifCJKKR(0)/m/n/10.95 Predictor of high-flow
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 155--156
-\TU/NotoSerifCJKKR(0)/m/n/10.95 nasal cannula therapy
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 156--157
-[]|\TU/NotoSerifCJKKR(0)/m/n/10.95 Alveolar-arterial oxygen
- []
-
-
-Overfull \hbox (41.33495pt too wide) in paragraph at lines 145--160
- [][] 
- []
-
-
-
-[3]
-
-[4]
-
-[5]
-
-[6]
-
-[7]
-Overfull \hbox (20.45447pt too wide) in paragraph at lines 296--315
- [][] 
- []
-
-
-Underfull \hbox (badness 1448) in paragraph at lines 328--329
-[]|\TU/NotoSerifCJKKR(0)/m/n/12 Kurtosis of respiratory rate over the
- []
-
-
-Underfull \hbox (badness 1596) in paragraph at lines 330--331
-\TU/NotoSerifCJKKR(0)/m/n/12 lar stress from pneumothorax mani-
- []
-
-
-Underfull \hbox (badness 3735) in paragraph at lines 336--337
-[]|\TU/NotoSerifCJKKR(0)/m/n/12 Kurtosis of diastolic blood pressure
- []
-
-
-Overfull \hbox (25.44217pt too wide) in paragraph at lines 324--339
- [][] 
- []
-
-
-
-[8]
-File: figures/feature_importance_top5.pdf Graphic file (type pdf)
-<use figures/feature_importance_top5.pdf>
-
-
-[9]
-
-[10]
-
-[11]
-
-[12]
-Overfull \hbox (2.21646pt too wide) in paragraph at lines 403--403
-\TU/NotoSerifCJKKR(0)/m/it/12 semi, M., Moody, B., Szolovits, P., Celi, L. A., 
-& Mark, R. G. (2016). MIMIC-
- []
-
-
-
-[13] (./Report.aux)
- ***********
-LaTeX2e <2024-11-01> patch level 2
-L3 programming layer <2025-01-18>
- ***********
-
-
-LaTeX Font Warning: Some font shapes were not available, defaults substituted.
-
-Package rerunfilecheck Info: File `Report.out' has not changed.
-(rerunfilecheck)             Checksum: 4F67468EE239E44F28A525304EC96A50;7927.
-Package logreq Info: Writing requests to 'Report.run.xml'.
-\openout1 = `Report.run.xml'.
-
- ) 
-Here is how much of TeX's memory you used:
- 29471 strings out of 475848
- 582118 string characters out of 5776012
- 1555012 words of memory out of 5000000
- 52104 multiletter control sequences out of 15000+600000
- 568221 words of font info for 101 fonts, out of 8000000 for 9000
- 14 hyphenation exceptions out of 8191
- 108i,12n,121p,695b,5642s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-Output written on Report.xdv (13 pages, 262176 bytes).
+* layout: <same siz
