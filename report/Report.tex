@@ -14,6 +14,7 @@
 \usepackage{hyperref}
 \usepackage{float}  
 \usepackage{graphicx}
+\usepackage{tabularx}
 
 \usepackage[backend=biber,style=apa,sorting=nyt]{biblatex}
 \DeclareLanguageMapping{korean}{korean-apa}
@@ -35,7 +36,7 @@
 \maketitle
 
 \begin{abstract}
-긴장성 기흉은 중환자실 환경에서 즉각적인 의료 개입이 필요한 생명을 위협하는 응급 상황이다. 본 프로젝트는 MIMIC-IV 데이터베이스를 활용하여 생체 신호 및 동맥혈 가스 분석 데이터로부터 긴장성 기흉의 조기 징후를 탐지하는 머신러닝 모델을 개발하였다. 총 4,667명의 환자 데이터로부터 256개의 시계열 특성을 추출하였으며, 도메인 지식 기반 파생 변수 및 고차 통계 특성을 포함하였다. 데이터 품질 확보를 위해 탐욕적 샘플 제거 알고리즘과 비대칭 임계값 기반 특성 선택을 적용하였으며, MICE 기법을 통한 다중 대체로 결측치를 처리하였다. XGBoost와 LightGBM 모델을 Optuna 프레임워크로 최적화하였으며, Focal Loss와 Cost-sensitive Learning을 통해 클래스 불균형 문제를 해결하였다. 5-fold 교차 검증 결과, XGBoost 모델이 AUROC 0.7457, AUPRC 0.6623, F1-score 0.6679를 달성하여 가장 우수한 성능을 보였다. 특히 Recall 0.7276을 기록하여 조기 탐지라는 임상적 목적에 부합하는 결과를 나타냈다. 본 프로젝트는 실시간 생체 신호 모니터링을 통한 긴장성 기흉의 조기 경보 시스템 구축 가능성을 제시한다.
+긴장성 기흉은 중환자실 환경에서 즉각적인 의료 개입이 필요한 생명을 위협하는 응급 상황이다. 본 프로젝트는 MIMIC-IV 데이터베이스를 활용하여 생체 신호 및 동맥혈 가스 분석 데이터로부터 긴장성 기흉의 조기 징후를 탐지하는 머신러닝 모델을 개발하였다. 총 4,950명의 환자 데이터로부터 256개의 시계열 특성을 추출하였으며, 도메인 지식 기반 파생 변수 및 고차 통계 특성을 포함하였다. 데이터 품질 확보를 위해 결측률 가중치 기반의 탐욕적 샘플 제거 알고리즘과 비대칭 임계값 기반 특성 선택을 제안 및 적용하였으며, MICE 기법을 통한 다중 대체로 결측치를 처리하였다. 최종적으로 선별된 76개의 특성과 900명의 데이터를 이용하여 XGBoost와 LightGBM 모델을 Optuna 프레임워크로 최적화하였으며, Focal Loss와 Cost-sensitive Learning을 통해 클래스 불균형 문제를 해결하였다. 5-fold 교차 검증 결과, XGBoost 모델이 AUROC 0.7457, AUPRC 0.6623, F1-score 0.7011을 달성하여 가장 우수한 성능을 보였다. 특히 Recall 0.7276을 기록하여 조기 탐지라는 임상적 목적에 부합하는 결과를 나타냈다. 본 프로젝트는 실시간 생체 신호 모니터링을 통한 긴장성 기흉의 조기 경보 시스템 구축 가능성을 제시한다.
 \end{abstract}
 
 \textbf{Keywords}: 긴장성 기흉, 조기 탐지, 머신러닝, XGBoost, 생체 신호 분석, MIMIC-IV
@@ -202,7 +203,7 @@ Raw Signal의 고차원성을 해소하고, 트리 기반 모델이 학습하기
 
 즉, 결측률이 높게 초과된 특성을 많이 가지고 있지 않은 표본일수록 높은 점수를 받아 우선적으로 제거된다.
 
-일반적으로 결측률이 높은 특성을 일괄 삭제하면 중요한 임상 정보를 잃을 위험이 있다. 본 프로젝트에서는 대조군의 샘플 수가 충분하다는 점에 착안하여, 특성을 보존하기 위해 질 낮은 대조군 샘플을 제거하는 결측치 가중치 기반 알고리즘을 기반한 샘플 제거 알고리즘을 \textbf{제안} 및 적용하였다. 이 알고리즘은 특정 특성의 결측률이 허용 임계값($\theta_{control}=50\%$)을 초과할 경우, 해당 결측에 대한 기여도가 높은 대조군 샘플을 우선적으로 반복 제거하는 방식으로 작동한다. 이를 통해 대조군 샘플 크기를 일부 희생하더라도 희소한 실험군을 유지하면서 모델링에 사용 가능한 유효 특성의 수를 최대화하였다.
+일반적으로 결측률이 높은 특성을 일괄 삭제하면 중요한 임상 정보를 잃을 위험이 있다. 본 프로젝트에서는 대조군의 샘플 수가 충분하다는 점에 착안하여, 특성을 보존하기 위해 질 낮은 대조군 샘플을 제거하는 결측률 가중치 기반 알고리즘을 기반한 샘플 제거 알고리즘을 \textbf{제안} 및 적용하였다. 이 알고리즘은 특정 특성의 결측률이 허용 임계값($\theta_{control}=50\%$)을 초과할 경우, 해당 결측에 대한 기여도가 높은 대조군 샘플을 우선적으로 반복 제거하는 방식으로 작동한다. 이를 통해 대조군 샘플 크기를 일부 희생하더라도 희소한 실험군을 유지하면서 모델링에 사용 가능한 유효 특성의 수를 최대화하였다.
 
 \subsubsection{Asymmetric Threshold-based Feature Selection}
 희소한 실험군 데이터와 풍부한 대조군 데이터의 특성을 고려하여, 특성 선정 기준에 비대칭 임계값을 적용하였다. 실험군의 경우 희소한 양성 환자 데이터를 최대한 보존하기 위해 결측률이 65\% 미만인 특성을 유지하였다. 반면 대조군에는 고품질 데이터만을 선별하고 학습 안정성을 확보하기 위해 50\%라는 더 엄격한 임계값을 적용하였다. 이러한 비대칭적 접근법은 희귀 질환 사례로부터 최대한의 정보를 추출하면서도, 더 큰 규모의 대조군에 대해서는 데이터 품질 기준을 유지하는 균형을 이루었다.
@@ -214,7 +215,22 @@ Raw Signal의 고차원성을 해소하고, 트리 기반 모델이 학습하기
 StandardScaler를 적용하여 모든 특성의 평균을 0, 표준편차를 1로 정규화하였다.
 
 \subsubsection{Final Dataset Construction}
-전처리 이후, SILVER 코호트를 배제하고 확진된 GOLD 코호트와 정제된 CLEAN 코호트만을 사용하여 최종 데이터셋을 구성하였다. 최종적으로 결측치가 존재하지 않는 완전한 데이터셋이 생성되었다.
+전처리 이후, SILVER 코호트를 배제하고 확진된 GOLD 코호트와 정제된 CLEAN 코호트만을 사용하여 최종 데이터셋을 구성하였다. 최종적으로 결측치가 존재하지 않는 완전한 데이터셋이 생성되었다. 각 단계별 코호트의 변화는 Table \ref{tab:cohort_counts}와 같다.
+
+\begin{table}[H]
+    \centering
+    \caption{Number of Subjects at Each Preprocessing Step}
+    \label{tab:cohort_counts}
+    \begin{tabular}{lcccc}
+    \toprule
+    \textbf{Step} & \textbf{GOLD} & \textbf{SILVER} & \textbf{CLEAN} & \textbf{Total} \\
+    \midrule
+    Initial Cohort & 704 & 409 & 539,842  & 540,955 \\
+    Feature Extraction & 150 & 409 & 4,391 & 4,950 \\
+    Sample Removal & 150 & - & 750 & 900 \\
+    \bottomrule
+    \end{tabular}
+\end{table}
 
 \subsection{Machine Learning Pipeline}
 
@@ -256,7 +272,7 @@ p & \text{if } y = 1 \\
 비교를 목적으로 해석력이 높은 로지스틱 회귀 기반의 기반 모델을 구축하였다. 기반 모델은 이벤트 시점 이전 3시간 동안의 생체 신호를 6개의 시간 구간으로 나누어 각 구간별로 평균, 최솟값, 최댓값 통계치를 추출하여 총 54개의 특성을 생성하였다. 결측치 처리는 중앙값을 사용하였으며, StandardScaler로 정규화를 수행하였다. 클래스 불균형 문제는 SMOTE를 통해 해결하였다. 로지스틱 회귀 모델은 L-BFGS 솔버를 기반으로 구축하였으며, L2 페널티를 적용해 일반화 성능을 높였다. 학습 과정의 최대 반복 횟수는 1,000회로 제한하였다. 회귀계수 분석 결과, SBP\_min\_t1, HR\_max\_t5, DBP\_min\_t4 등 혈압 및 심박수 관련 특성의 변동성이 기흉 예측에 주요 기여를 하는 것으로 나타났다.
 
 \subsubsection{Model Selection and Hyperparameter Optimization}
-본 프로젝트에서는 XGBoost와 LightGBM을 사용하였다. 하이퍼파라미터 최적화는 Optuna 프레임워크\cite{akiba2019}를 활용하였으며, Tree-structured Parzen Estimator Sampler를 탐색 알고리즘으로 채택하였다. 비효율적인 하이퍼파라미터 조합의 조기 종료를 위해 MedianPruner를 적용하였으며, 과적합 방지를 위해 검증 성능이 30 라운드 동안 향상되지 않을 경우 학습을 조기 종료하도록 설정하였다. 각 모델에 대해 100회의 최적화 시도를 수행하였으며, 최적화 목표 지표로 LogLoss를 최소화하도록 설정하였다.
+본 프로젝트에서는 데이터의 수가 적고, Tabular Featue Engineering이 중요하여 LSTM, GRU, Transformer와 같은 시계열 딥러닝 모델이 아닌 트리 기반 모델인 XGBoost와 LightGBM을 사용하였다. 하이퍼파라미터 최적화는 Optuna 프레임워크\cite{akiba2019}를 활용하였으며, Tree-structured Parzen Estimator Sampler를 탐색 알고리즘으로 채택하였다. 비효율적인 하이퍼파라미터 조합의 조기 종료를 위해 MedianPruner를 적용하였으며, 과적합 방지를 위해 검증 성능이 30 라운드 동안 향상되지 않을 경우 학습을 조기 종료하도록 설정하였다. 각 모델에 대해 100회의 최적화 시도를 수행하였으며, 최적화 목표 지표로 LogLoss를 최소화하도록 설정하였다.
 
 \subsubsection{Threshold Optimization}
 기본 임계값(0.5) 대신, 각 Fold 및 모델별로 F1-score를 최대화하는 최적 임계값을 탐색하여 적용하였다.
@@ -284,6 +300,30 @@ pos\_weight\_multiplier & 13.21 & 17.69 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{Ablation Study on Preprocessing Strategies}
+
+\begin{table}[H]
+    \centering
+    \caption{Ablation Study of Preprocessing Strategies}
+    \label{tab:ablation}
+    \small
+    \begin{tabularx}{\linewidth}{Xcccccc}
+    \toprule
+    \textbf{Strategy} & \textbf{AUROC} & \textbf{AUPRC} & \textbf{Recall} & \textbf{Precision} & \textbf{Accuracy} & \textbf{F1-score} \\
+    \midrule
+    Baseline(Without Preprocessing) & 0.7657 & 0.1140 & 0.2418 & 0.1086 & 0.9028 & 0.1499 \\
+    Greedy Sample Removal & 0.6470 & 0.4122 & 0.3673 & 0.4148 & 0.7855 & 0.3896 \\
+    \textbf{Greedy Sample Removal + Asymmetric Thresh (Proposed)} & \textbf{0.7457} & \textbf{0.6623} & \textbf{0.7276} & \textbf{0.6764} & 0.7678 & \textbf{0.7011} \\
+    \bottomrule
+    \end{tabularx}
+\end{table}
+
+제안한 결측률 가중치 기반 샘플 제거 알고리즘과 비대칭 임계값 기반 특성 선택이 들어가지 않은 베이스라인 모델은 높은 정확도(0.9028)와 AUROC(0.7657)를 보였으나, AUPRC(0.1140)와 F1-score(0.1499)가 극도로 저조하였다. 이는 모델이 다수 클래스인 대조군에 과적합되어, 소수 클래스인 실제 긴장성 기흉을 거의 탐지하지 못하는(Recall 0.2418) 문제가 발생한 것으로, 단순 고정 임계값 적용으로 인해 실험군의 중요한 정보가 손실되었거나, 질 낮은 대조군 데이터가 노이즈로 작용한 결과로 판단된다.
+
+여기에 제안한 결측률 가중치 기반 샘플 제거 알고리즘을 적용한 결과, AUROC와 정확도는 다소 감소하였으나, AUPRC가 0.1140에서 0.4122로, F1-score가 0.1499에서 0.3896으로 대폭 향상되었다. 이는 결측률이 높은 저품질 샘플을 선별적으로 제거함으로써 데이터의 질적 향상을 도모하고, 모델이 소수 클래스의 패턴을 학습하는 데 긍정적인 영향을 미쳤음을 보여준다. 비록 AUROC은 불안정해졌으나, 정밀도와 재현율의 균형이 개선되기 시작했다.
+
+최종적으로 비대칭 임계값 기반 특성 선택 알고리즘을 추가 적용했을 때, 모든 성능 지표에서 비약적인 향상이 확인되었다. 특히 F1-score는 0.7011로 베이스라인 대비 4배 이상 증가하였으며, Recall 또한 0.7276으로 크게 개선되어 조기 탐지라는 임상적 목적을 달성하였다. AUROC 또한 0.7457로 회복되어, 일반화 성능과 탐지 능력의 균형을 맞추었다. 이는 희소한 실험군의 특성은 최대한 보존하고, 풍부한 대조군은 엄격하게 선별하는 비대칭 전략이 클래스 불균형 문제 해결과 정보 보존에 결정적인 기여를 했음을 입증한다. 즉, 데이터 품질 확보와 불균형 해소를 통해 모델의 실질적인 탐지 성능을 극대화할 수 있었음을 확인할 수 있다.
 
 \subsection{Model Performance Evaluation}
 5-fold 교차 검증을 통해 평가된 모델별 성능은 Table \ref{tab:results}와 같다.
@@ -313,6 +353,44 @@ pos\_weight\_multiplier & 13.21 & 17.69 \\
     \bottomrule
     \end{tabular}
 \end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/confusion_matrix.png}
+    \caption{Confusion Matrix (XGBoost). TP: 109, FN: 41, FP: 52, TN: 698.}
+    \label{fig:confusion_matrix}
+\end{figure}
+
+\subsection{Statistical Analysis and Clinical Utility}
+
+\subsubsection{Statistical Significance Test}
+XGBoost와 LightGBM 모델 간의 성능 차이에 대한 통계적 유의성을 검증하기 위해, 5-fold 교차 검증을 통해 산출된 F1-score에 대하여 Paired t-test를 수행하였다. 검정 결과 p-value는 0.1514 ($p > 0.05$)로 산출되어, 5\% 유의 수준에서 두 모델 간의 성능 차이는 통계적으로 유의하지 않은 것으로 나타났다. 이는 XGBoost가 수치적으로 더 높은 평균 성능을 보였으나, 폴드 간의 변동성을 고려할 때 두 모델이 통계적으로 유사한 예측 성능을 가짐을 시사한다.
+
+\subsubsection{Calibration Analysis}
+모델의 예측 확률 신뢰도를 평가하기 위해 Calibration Curve를 분석하였다(Figure \ref{fig:calibration}). 
+
+분석 결과, LightGBM은 대각선보다 현저히 낮은 위치에 분포하여, 실제 양성 발생 빈도에 비해 예측 확률을 과소평가하는 경향이 뚜렷하게 관찰되었다. 반면, XGBoost는 전 구간에서 대각선에 상대적으로 더 근접한 패턴을 보이며 더 나은 보정 성능을 입증하였다. 이를 정량적으로 뒷받침하는 Brier Score 또한 XGBoost가 0.142로 LightGBM의 0.213보다 낮게 산출되어, XGBoost가 예측한 확률값이 실제 임상적 위험도를 더 신뢰성 있게 반영하고 있음을 확인하였다.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/calibration_curve.png}
+    \caption{Calibration curves comparing XGBoost and LightGBM. The XGBoost model (Brier: 0.142) demonstrates better calibration compared to LightGBM (Brier: 0.213), which tends to underestimate the risk probabilities.}
+    \label{fig:calibration}
+\end{figure}
+
+\subsubsection{Decision Curve Analysis}
+전통적인 성능 지표를 넘어 모델의 임상적 실효성을 평가하기 위해 Decision Curve Analysis(DCA)를 수행하였다(Figure \ref{fig:dca}).
+
+Figure \ref{fig:dca}에서 XGBoost 모델은 약 $0.0$에서 $0.2$ 사이의 낮은 임계값 구간에서 Treat All 및 Treat None 전략 대비 높은 Net Benefit을 보였다. 이는 해당 모델이 긴장성 기흉을 놓치지 않아야 하는 조기 선별 도구로서 임상적 가치가 있음을 시사한다. 
+
+그러나 임계값이 $0.25$를 초과하는 구간에서는 Net Benefit이 0 미만으로 감소하거나 불안정한 양상을 보였다. 이는 모델이 높은 확신을 요구하는 확진 단계보다는, 낮은 확률 임계값을 적용하여 위험군을 1차적으로 선별하는 조기 경보 시스템으로 활용될 때 최대의 효용을 가짐을 의미한다. 반면, LightGBM은 대부분의 구간에서 Treat None 대비 유의미한 이득을 보이지 못하였다.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/decision_curve_analysis.png}
+    \caption{Decision Curve Analysis (DCA). The y-axis measures the net benefit. The XGBoost model shows a positive net benefit in the low threshold probability range ($0.0 - 0.2$), suggesting its utility as a screening tool. In contrast, LightGBM fails to provide clinical utility across relevant thresholds.}
+    \label{fig:dca}
+\end{figure}
 
 \subsection{Key Predictive Features}
 Permutation Importance 기반으로 선정된 상위 5개 특성은 Table \ref{tab:features}와 같다.
@@ -345,7 +423,79 @@ Permutation Importance 기반으로 선정된 상위 5개 특성은 Table \ref{t
     \label{fig:feature_importance}
 \end{figure}
 
-    
+\subsection{SHAP Analysis for Model Interpretability and Local Interpretability}
+
+\subsubsection{Global Interpretability and Feature Impact}
+Figure \ref{fig:shap_beeswarm}은 XGBoost 모델의 SHAP summary plot으로 분석 결과, 전체 쇼크 인덱스 평균절대편차(\texttt{all\_SHOCK\_INDEX\_mad})와 최근 2시간 호흡수 첨도(\texttt{w120\_RR\_kurt})는 붉은 점들이 주로 양의 SHAP 값에 분포하여, 해당 생체 신호의 급격한 변동성이 긴장성 기흉의 위험도를 높이는 주요 인자임을 시각적으로 입증하였다. 이는 앞서 Figure \ref{fig:feature_importance}의 결과와 일치하며, 기흉 발생 시 호흡 및 혈역학적 불안정성이 급증한다는 임상적 지식과 부합한다.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/xgboost_shap_beeswarm.png}
+    \caption{SHAP beeswarm plot summarizing the impact of features on model output. Red dots represent high feature values, blue dots represent low values. Positive SHAP values indicate a higher predicted risk of tension pneumothorax.}
+    \label{fig:shap_beeswarm}
+\end{figure}
+
+\subsubsection{Feature Dependence and Non-linearity Analysis}
+Figure \ref{fig:shap_dependence}는 주요 상위 변수들에 대한 SHAP dependence plot을 도시화한 것으로, 이를 통해 모델이 학습한 변수와 예측값 간의 비선형적 관계 및 변수 간 상호작용 효과를 규명하였다.
+
+본 분석에서 관찰된 주된 특징은 혈역학적 불안정성을 대변하는 변수들이 모델의 의사결정에 지배적인 영향을 미친다는 점이다.
+
+첫째, 좌상단의 쇼크 인덱스의 절대 표준 편차(\texttt{all\_SHOCK\_INDEX\_mad}) 그래프에서는 변동성이 0에 근접한 기저 상태를 벗어나는 즉시 SHAP 값이 급격히 상승하는 양상이 관찰된다. 이는 모델이 쇼크 인덱스의 미세한 동요조차 긴장성 기흉의 조기 징후로 식별하며, 해당 변수에 대해 매우 높은 민감도를 가지고 있음을 시사한다.
+
+둘째, 좌하단의 \texttt{w120\_SpO2\_rmssd}는 산소포화도의 변동성이 증가함에 따라 위험도가 선형적으로 상승하는 뚜렷한 양의 상관관계를 보인다. 이는 호흡 부전 진행에 수반되는 생체 신호의 불규칙성을 모델이 주요 위험 인자로 학습하였음을 뒷받침한다.
+
+셋째, 우측 하단의 혈압추세--(\texttt{w120\_SBP\_trend\_tau})는 명확한 시그모이드 형태의 비선형 패턴을 나타낸다. 이는 모델이 혈압 추세의 변화를 단순 선형 결합이 아닌, 특정 임계값을 기준으로 위험 구간을 구분하는 비선형적 메커니즘을 통해 탐지하고 있음을 의미한다.
+
+아울러, 각 그래프의 색상은 상호작용 변수의 분포를 나타낸다. 특히 \texttt{all\_SHOCK\_INDEX\_mad} 그래프에서 관찰되는 수직적 분산은 호흡수 첨도(\texttt{w120\_RR\_kurt}) 값에 의해 매개된다. 이는 모델의 최종 위험도 예측이 단일 변수의 변화뿐만 아니라, 호흡수 패턴 등 타 생체 신호와의 복합적인 상호작용에 기인함을 입증한다.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/xgboost_dependence_top6.png}
+    \caption{SHAP dependence plots for the top 6 features. These plots reveal non-linear relationships between feature values (x-axis) and their impact on the model's prediction (y-axis).}
+    \label{fig:shap_dependence}
+\end{figure}
+
+\subsubsection{Local Interpretability analysis using SHAP Force Plots}
+Figure \ref{fig:shap_force}는 XGBoost 모델의 개별 예측 사례에 대한 SHAP force plot이다.
+
+\paragraph{Case 1: True Positive}
+Figure \ref{fig:shap_force}의 상단 그래프는 실제 긴장성 기흉을 정확하게 탐지한 사례(Prob: 0.94)이다. 여기서 모델의 판단을 주도한 핵심 변수는 \texttt{w120\_SpO2\_mad}와 \texttt{all\_DBP\_mad}였다. 이는 산소포화도와 이완기 혈압의 급격한 변동성이 기흉 발생 시 나타나는 저산소증 및 혈역학적 불안정성을 잘 반영하고 있음을 시사한다. 또한 \texttt{all\_SHOCK\_INDEX\_kurt}가 양의 방향으로 작용하여, 쇼크 인덱스의 분포적 특이성 또한 중요한 탐지 근거로 활용되었다.
+
+\paragraph{Case 2: False Positive}
+중단 그래프는 실제로는 위험 상황이 아니나, 모델이 고위험군으로 오분류(Prob: 0.79)한 사례이다. \texttt{all\_SHOCK\_INDEX\_kurt}와 \texttt{w120\_RR\_kurt}가 붉은색 막대의 큰 비중을 차지하고 있다. 이는 호흡수와 쇼크 인덱스의 일시적인 이상 패턴이나 노이즈를 모델이 심각한 징후로 과대평가했기 때문이다. 특히 \texttt{w120\_SBP\_trend\_tau}와 같은 트렌드 변수까지 결합되어, 모델이 단순한 생체 신호의 흔들림을 병리적인 패턴으로 오인했음을 확인할 수 있다.
+
+\paragraph{Case 3: False Negative}
+하단 그래프는 실제 긴장성 기흉을 놓친 사례(Prob: 0.46)이다. 예측 확률이 0.46으로 임계값(0.5)에 매우 근접하였으나 최종적으로 음성으로 분류되었다. 주목할 점은 심박수 샘플 엔트로피(\texttt{w120\_HR\_sampen})는 붉은색으로 작용하여 위험 신호를 감지했으나, \texttt{all\_SHOCK\_INDEX\_mad}와 \texttt{all\_SHOCK\_INDEX\_kurt}가 음의 기여으로 강하게 작용하여 이를 상쇄했다는 것이다. 즉, 심박수의 복잡도는 증가했음에도 불구하고, 쇼크 인덱스의 변동성이 낮게 유지되어 모델이 이를 혈역학적으로 안정된 상태로 오판하는 결과를 초래했다. 이는 단일 생체 신호 지표가 안정적일지라도, 엔트로피와 같은 복합적인 신호 패턴을 더 면밀히 고려해야 함을 시사한다.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/xgboost_force_cases_combined.png}
+    \caption{SHAP force plots for individual predictions. (Top) True Positive case where the model correctly identified high risk. (Bottom) False Positive case illustrating potential false alarms. Red bars indicate features pushing the prediction towards positive (risk), while blue bars push towards negative (safe).}
+    \label{fig:shap_force}
+\end{figure}
+
+\subsection{Error Analysis}
+
+모델의 예측 신뢰성을 제고하고 오분류 원인을 규명하기 위해, XGBoost 모델의 False Negative(FN) 및 False Positive(FP) 사례에 대한 정성적 분석을 수행하였다.
+
+\subsubsection{False Negative Analysis}
+실제 긴장성 기흉 환자를 놓친(FN) 사례들의 주요 특징은 데이터의 '비정상적 평탄화'였다. Figure \ref{fig:error_fn}에서 볼 수 있듯이, 주요 생체 신호의 첨도가 -1.5로 나타나는 경우가 빈번하였다. 이는 데이터 분포가 완전히 평탄하거나, 결측치가 단일 값으로 대체되어 변동성이 소실된 상태를 의미한다. 또한 데이터 포인트의 개수가 현저히 적은 패턴도 확인하였다. 즉, 센서 접촉 불량이나 데이터 수집 오류로 인해 신호가 소실되거나, 전처리 과정에서 과도하게 평활화된 경우 모델이 이를 안정적인 정상 상태로 오인하여 위험 징후를 포착하지 못한 것으로 해석된다.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/xgboost_error_fn.png}
+    \caption{Distribution of top distinguishing features for False Negative cases in XGBoost. The presence of features with kurtosis values of -1.5 suggests that signal loss or artificial flatness due to imputation contributed to missed detections.}
+    \label{fig:error_fn}
+\end{figure}
+
+\subsubsection{False Positive Analysis}
+반면, 거짓 양성 사례에서는 신호의 복잡도가 0.0이거나 첨도가 -1.5인 극단적인 패턴이 주요 원인으로 식별되었다(Figure \ref{fig:error_fp}). 일반적으로 생체 신호는 일정 수준의 불규칙성을 가지나, 장기간 신호가 결측되어 MICE로도 대체가 어려웠거나, 직선 형태의 아티팩트가 포함된 경우 엔트로피가 0으로 수렴한다. XGBoost 모델은 이러한 정적을 기흉 발생 임박 시의 전조 증상이나 심각한 이상 신호로 과잉 해석하여 거짓 경보를 발생시킨 것으로 판단된다. 이는 데이터 품질 저하가 모델의 성능을 저해하는 양면적인 원인임을 시사한다.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/xgboost_error_fp.png}
+    \caption{Distribution of top distinguishing features for False Positive cases in XGBoost. Features with zero sample entropy or extreme kurtosis indicate that the model may misinterpret signal artifacts or flatlines as pathological anomalies.}
+    \label{fig:error_fp}
+\end{figure}
 
 \section{Discussion}
 
@@ -358,11 +508,11 @@ Permutation Importance 기반으로 선정된 상위 5개 특성은 Table \ref{t
 
 또한, 상위 5개 특성 중 3개가 120분(2시간) 시간 윈도우에서 추출되었다. 이는 30분 단기 윈도우나 180분(3시간) 전체 윈도우보다 중간 범위의 시간 척도가 더 높은 예측력을 보임을 의미한다. 30분 윈도우는 측정 오차나 일시적 변동에 취약할 수 있으며, 180분 윈도우는 초기의 안정적인 상태를 포함하여 이벤트 직전의 변화를 희석시킬 수 있다. 반면 120분 윈도우는 병리학적 변화가 본격적으로 진행되는 시기를 포착하면서도 충분한 데이터 포인트를 확보하여 통계적 안정성을 유지하는 최적 구간으로 판단된다.
 
-그리고, 호흡수(Respiratory Rate) 관련 특성이 나머지를 차지하였다. 긴장성 기흉의 핵심 병태생리는 환기-관류 불균형과 폐 허탈로 인한 호흡 부전이며, 이는 심박수나 혈압의 변화보다 선행하는 것으로 알려져 있다. 환자는 저산소증에 대한 보상 기전으로 호흡수를 증가시키며, 흉막강 내 압력 변동으로 인해 호흡 패턴의 불규칙성이 나타난다. 따라서 호흡수의 첨도가 주요 예측 인자로 식별된 것은 긴장성 기흉의 임상적 발현 순서와 일치하며, 호흡기계 모니터링이 조기 경보 시스템에서 핵심적 역할을 할 수 있음을 시사한다.
+그리고, 호흡수 관련 특성이 나머지를 차지하였다. 긴장성 기흉의 핵심 병태생리는 환기-관류 불균형과 폐 허탈로 인한 호흡 부전이며, 이는 심박수나 혈압의 변화보다 선행하는 것으로 알려져 있다. 환자는 저산소증에 대한 보상 기전으로 호흡수를 증가시키며, 흉막강 내 압력 변동으로 인해 호흡 패턴의 불규칙성이 나타난다. 따라서 호흡수의 첨도가 주요 예측 인자로 식별된 것은 긴장성 기흉의 임상적 발현 순서와 일치하며, 호흡기계 모니터링이 조기 경보 시스템에서 핵심적 역할을 할 수 있음을 시사한다.
 
 \subsection{Methodological Strengths}
 
-\subsubsection{결측치 기반 샘플 제거 알고리즘}
+\subsubsection{Weight-based Sample Removal Algorithm}
 의료 데이터에서는 특성 간 상호의존성이 높아 단순 특성 제거 시 임상적으로 중요한 정보가 손실될 수 있다. 탐욕적 샘플 제거 알고리즘 기반한 제안한 특성 추출 방식은 listwise deletion이나 완전 특성 제거와 달리, 동맥혈 가스 분석과 같이 임상적으로 핵심적인 변수들을 보존하면서도 결측률이 높은 샘플만 선택적으로 제거한다.
 
 이를 통해 특성 기반 접근법들이 가진 정보 손실 문제를 해결하고, 의료진의 임상적 판단에 필수적인 생체 지표들을 온전히 유지할 수 있었다. 알고리즘은 각 샘플의 결측 패턴을 분석하여 전체 데이터셋의 통계적 대표성을 훼손하지 않는 범위에서 최적의 샘플을 제거하도록 설계되었다.

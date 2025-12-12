@@ -1,17 +1,16 @@
 # Fdb version 4
-["biber Report"] 1765131973.1927 "Report.bcf" "Report.bbl" "Report" 1765131974.47881 0
-  "Report.bcf" 1765131973.12737 133686 3aa4d1d1c8f0071c797be2ed08bd0fb3 "xelatex"
-  "references.bib" 1764830334.0666 2306 802ede2ec976be44a3006aabcba0512e ""
+["biber Report"] 1765540624.30221 "Report.bcf" "Report.bbl" "Report" 1765540624.705 2
+  "Report.bcf" 0 -1 0 "xelatex"
   (generated)
   "Report.bbl"
   "Report.blg"
   (rewritten before read)
-["xdvipdfmx"] 1765131973.76111 "Report.xdv" "Report.pdf" "Report" 1765131974.4801 0
-  "Report.xdv" 1765131973.12854 262176 a783a2b8ccca1be134d7aa2c5320c752 "xelatex"
+["xdvipdfmx"] 1765540428.2737 "Report.xdv" "Report.pdf" "Report" 1765540434.60932 0
+  "Report.xdv" 1765540428.21794 347180 273e61e32536c2749831152c93a91732 "xelatex"
   (generated)
   "Report.pdf"
   (rewritten before read)
-["xelatex"] 1765131971.6537 "Report.tex" "Report.xdv" "Report" 1765131974.4789 0
+["xelatex"] 1765540426.78603 "Report.tex" "Report.xdv" "Report" 1765540624.70516 0
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1755987285 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1755987285 1528 f853c4d1b4e0550255e02831fdc8496f ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1755987285 1004 54797486969f23fa377b128694d548df ""
@@ -125,6 +124,7 @@
   "/usr/share/texmf-dist/tex/latex/siunitx/siunitx.sty" 1755987285 340829 1b2c1d1f1f03e683fab4091869acffd3 ""
   "/usr/share/texmf-dist/tex/latex/tools/array.sty" 1755987285 14552 27664839421e418b87f56fa4c6f66b1a ""
   "/usr/share/texmf-dist/tex/latex/tools/longtable.sty" 1755987285 15900 3cb191e576c7a313634d2813c55d4bf1 ""
+  "/usr/share/texmf-dist/tex/latex/tools/tabularx.sty" 1755987285 7243 e5dac1240636811edb77568b81818372 ""
   "/usr/share/texmf-dist/tex/latex/translations/translations-basic-dictionary-english.trsl" 1755987285 5588 0c1628daf15f4411ff1f463114c634a3 ""
   "/usr/share/texmf-dist/tex/latex/translations/translations.sty" 1755987285 44247 2188b95d0ee74e31eca4d316263c58a7 ""
   "/usr/share/texmf-dist/tex/latex/url/url.sty" 1755987285 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
@@ -132,13 +132,21 @@
   "/usr/share/texmf-dist/tex/xetex/xetexko/xetexko.sty" 1755987285 94073 d4b64bf6ee5b2875b7cb3d5d07591e54 ""
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1755987285 42087 b0f9697c952c8f5a8eede4134282cb0d ""
   "/var/lib/texmf/web2c/xetex/xelatex.fmt" 1763006436 4491655 75bcf1bb16a3498b47f2236083754dcf ""
-  "Report.aux" 1765131973.12614 9912 4902b91b638585b9c89899be496212cd "xelatex"
-  "Report.bbl" 1765131973.74286 33464 7fbf10d42e63c4228f5b64796dff598d "biber Report"
-  "Report.out" 1765131973.12637 7927 4f67468ee239e44f28a525304ec96a50 "xelatex"
-  "Report.run.xml" 1765131973.12854 2476 633f60bd63b6dff10cc8a4746ee2c276 "xelatex"
-  "Report.tex" 1765131969.10423 38116 a87c1ad5d7f5b5024cf6014528fdc8ce ""
+  "Report.aux" 1765540622.46425 16384 7b4e7cf94d25af44aeac8050ac90889c "xelatex"
+  "Report.bbl" 0 -1 0 "biber Report"
+  "Report.out" 1765540619.53126 8192 0be86402b009b4b94033f912b34234e3 "xelatex"
+  "Report.run.xml" 1765540428.21794 2476 f508276b6a9bfa340bf58656030a7191 "xelatex"
+  "Report.tex" 1765540617.53834 54192 cac9c40205e01ce151dd748071b1e263 ""
+  "figures/calibration_curve.png" 1765521743.85041 205035 2916c87c732c00b59378226578b6946b ""
+  "figures/confusion_matrix.png" 1765538209.75514 121032 ab55d7f273001203620838893754878a ""
+  "figures/decision_curve_analysis.png" 1765521744.07576 180434 f6ca0b872557ef03a80d69718c48142b ""
   "figures/feature_importance_top5.pdf" 1764834265.15001 25145 71dd7fd210d15cf95566f5e7008daf52 ""
   "figures/pneumothorax.png" 1765131270.78743 826646 cbfca8db681f64a2c637cd6fdfae7621 ""
+  "figures/xgboost_dependence_top6.png" 1765504608.22694 989426 f1a84975b76ac159df25496b1a4042ee ""
+  "figures/xgboost_error_fn.png" 1765525544.29324 43227 37ea1f20cdea74eb97cb42ae604a2711 ""
+  "figures/xgboost_error_fp.png" 1765525544.29469 42237 5a4a383d99284893e7bc8390105a365c ""
+  "figures/xgboost_force_cases_combined.png" 1765504608.2286 2317992 2ee232b111c9f02267dceb961d462204 ""
+  "figures/xgboost_shap_beeswarm.png" 1765445818.40836 635395 3a1145753ea2032e4539a434a4e8dba5 ""
   (generated)
   "Report.aux"
   "Report.bcf"

@@ -6,3 +6,10 @@ mimic-cxr-chexpert/
 mimic-cxr-negbio/
 mimic-cxr-reports/
 logs/
+*.fdb*
+.aux
+.bbl
+.bcf*
+.blg*
+.out
+.xdv

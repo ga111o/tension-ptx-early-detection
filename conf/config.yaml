@@ -87,3 +87,9 @@ output:
   save_feature_importance: true
 
   save_cv_results: true
+
+  shap:
+    enabled: true
+    output_dir: "outputs/shap"
+    sample_size: 500
+    max_display: 20

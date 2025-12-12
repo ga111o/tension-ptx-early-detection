@@ -13,6 +13,10 @@ from .feature_utils import (
 from .optuna_utils import optimize_hyperparameters
 from .model_utils import train_with_best_params
 from .cv_utils import _run_cv_with_best_params
+from .shap_utils import generate_shap_analysis
+from .evaluation_plots import plot_calibration_curve_with_brier, plot_decision_curve_analysis
+from .stats_utils import compute_delong_pvalue, perform_paired_ttest
+from .error_analysis import analyze_model_errors
 
 
 def run_optimization_pipeline(
@@ -178,6 +182,7 @@ def run_pipeline(cfg: DictConfig) -> dict | None:
     lgb_model = opt_results["models"]["lightgbm"]
     feature_cols = opt_results["feature_cols"]
     cv_results = opt_results["cv_results"]
+    shap_outputs = None
 
     avg_thresh_xgb = np.mean(cv_results["optimal_thresholds"]["XGBoost"])
     avg_thresh_lgb = np.mean(cv_results["optimal_thresholds"]["LightGBM"])
@@ -209,6 +214,138 @@ def run_pipeline(cfg: DictConfig) -> dict | None:
         cv_results["summary"].to_csv(f"{data_cfg.output_dir}/cv_results_summary_optuna.csv", index=False)
         print(f"  - {data_cfg.output_dir}/cv_results_summary_optuna.csv")
 
+        # Save detailed per-fold metrics
+        detailed_rows = []
+        for model_name, metrics in cv_results["cv_results"].items():
+            for metric, values in metrics.items():
+                for fold_idx, value in enumerate(values):
+                    detailed_rows.append({
+                        "Model": model_name,
+                        "Metric": metric,
+                        "Fold": fold_idx,
+                        "Value": value
+                    })
+        pd.DataFrame(detailed_rows).to_csv(f"{data_cfg.output_dir}/cv_results_detailed_optuna.csv", index=False)
+        print(f"  - {data_cfg.output_dir}/cv_results_detailed_optuna.csv")
+
+        # Save OOF predictions
+        if "ensemble_info" in cv_results:
+            y_true = features_df["label"].values
+            oof_df = pd.DataFrame({
+                "label": y_true,
+                "xgboost_pred": cv_results["ensemble_info"]["oof_xgb"],
+                "lightgbm_pred": cv_results["ensemble_info"]["oof_lgb"]
+            })
+            oof_df.to_csv(f"{data_cfg.output_dir}/oof_predictions.csv", index=False)
+            print(f"  - {data_cfg.output_dir}/oof_predictions.csv")
+
+            # Generate Calibration Curve and DCA
+            print("\nGenerating Clinical Evaluation Plots (Calibration, DCA)...")
+            figures_dir = output_cfg.shap.output_dir if hasattr(output_cfg, "shap") and output_cfg.shap.output_dir else "report/figures"
+            
+            y_true_oof = oof_df["label"].values
+            y_probs_oof = {
+                "XGBoost": oof_df["xgboost_pred"].values,
+                "LightGBM": oof_df["lightgbm_pred"].values
+            }
+            
+            plot_calibration_curve_with_brier(
+                y_true_oof, 
+                y_probs_oof, 
+                f"{figures_dir}/calibration_curve.png"
+            )
+            plot_decision_curve_analysis(
+                y_true_oof, 
+                y_probs_oof, 
+                f"{figures_dir}/decision_curve_analysis.png"
+            )
+
+            # Statistical Significance Tests
+            print("\nStatistical Significance Tests")
+            print("==============================")
+            
+            # 1. DeLong Test (AUROC) using OOF predictions
+            p_val, auc_xgb, auc_lgb = compute_delong_pvalue(y_true_oof, y_probs_oof["XGBoost"], y_probs_oof["LightGBM"])
+            
+            print(f"\n[DeLong Test for AUROC]")
+            print(f"XGBoost AUROC: {auc_xgb:.4f}")
+            print(f"LightGBM AUROC: {auc_lgb:.4f}")
+            print(f"DeLong p-value: {p_val:.4e}")
+            if p_val < 0.05:
+                print(">> Statistically significant difference (p < 0.05)")
+            else:
+                print(">> No statistically significant difference (p >= 0.05)")
+            
+            # 2. Paired t-test (F1-score) using CV fold results
+            metric = "f1"
+            if metric in cv_results["cv_results"]["XGBoost"] and metric in cv_results["cv_results"]["LightGBM"]:
+                xgb_scores = cv_results["cv_results"]["XGBoost"][metric]
+                lgb_scores = cv_results["cv_results"]["LightGBM"][metric]
+                
+                print(f"\n[Paired t-test for F1-score]")
+                t_stat, p_val_ttest = perform_paired_ttest(xgb_scores, lgb_scores)
+                
+                print(f"Mean F1 - XGBoost: {np.mean(xgb_scores):.4f}, LightGBM: {np.mean(lgb_scores):.4f}")
+                print(f"Paired t-test p-value: {p_val_ttest:.4e}")
+                if p_val_ttest < 0.05:
+                    print(">> Statistically significant difference (p < 0.05)")
+                else:
+                    print(">> No statistically significant difference (p >= 0.05)")
+            else:
+                print(f"\n[Paired t-test] Metric '{metric}' not found in CV results.")
+
+            # Error Analysis
+            print("\nRunning Error Analysis (Qualitative Analysis of Missed Cases)...")
+            analyze_model_errors(
+                y_true=y_true_oof,
+                y_pred_prob=y_probs_oof["XGBoost"],
+                features_df=features_df,
+                feature_cols=feature_cols,
+                threshold=avg_thresh_xgb,
+                model_name="XGBoost",
+                output_dir=f"{data_cfg.output_dir}/error_analysis"
+            )
+            analyze_model_errors(
+                y_true=y_true_oof,
+                y_pred_prob=y_probs_oof["LightGBM"],
+                features_df=features_df,
+                feature_cols=feature_cols,
+                threshold=avg_thresh_lgb,
+                model_name="LightGBM",
+                output_dir=f"{data_cfg.output_dir}/error_analysis"
+            )
+
+
+    if hasattr(output_cfg, "shap") and output_cfg.shap.enabled:
+        shap_cfg = output_cfg.shap
+        shap_outputs = generate_shap_analysis(
+            {"xgboost": xgb_model, "lightgbm": lgb_model},
+            features_df,
+            feature_cols,
+            output_dir=shap_cfg.output_dir,
+            sample_size=shap_cfg.sample_size,
+            max_display=shap_cfg.max_display,
+            imputer=opt_results["imputer"],
+            random_seed=pipeline_cfg.random_seed,
+            thresholds={"xgboost": avg_thresh_xgb, "lightgbm": avg_thresh_lgb},
+        )
+        print("\nSHAP plots saved:")
+        for model_name, paths in shap_outputs.items():
+            print(f"  {model_name}:")
+            summaries = paths.get("summary", {})
+            if summaries:
+                for plot_name, path in summaries.items():
+                    print(f"    - summary/{plot_name}: {path}")
+            dependence = paths.get("dependence", {})
+            if dependence:
+                for feat, path in dependence.items():
+                    print(f"    - dependence/{feat}: {path}")
+            force = paths.get("force", {})
+            if force:
+                for tag, path in force.items():
+                    if path:
+                        print(f"    - force/{tag}: {path}")
+
     return {
         "models": {"xgboost": xgb_model, "lightgbm": lgb_model},
         "cv_results": cv_results,
@@ -219,4 +356,5 @@ def run_pipeline(cfg: DictConfig) -> dict | None:
         "optimization_results": opt_results,
         "scaler": opt_results["scaler"],
         "imputer": opt_results["imputer"],
+        "shap_paths": shap_outputs,
     }

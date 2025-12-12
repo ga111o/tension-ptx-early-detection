@@ -206,13 +206,8 @@ def handle_missing_values(
     n_imputations: int = 5,
     mice_max_iter: int = 10,
     random_state: int = 42,
+    enable_greedy_removal: bool = True,
 ) -> Tuple[pd.DataFrame, Dict]:
-    """
-    Group-specific missing value handling pipeline
-    1 Greedy sample removal
-    2 Feature filtering
-    3 MICE multiple imputation
-    """
     print("\n" + "=" * 60)
     print("Missing Value Handling Pipeline")
     print("=" * 60)
@@ -227,9 +222,12 @@ def handle_missing_values(
 
     print(f"Initial: {len(df)} samples Exp={n_exp_init}, Ctrl={n_ctrl_init}, Features={len(feature_cols)}")
 
-    df = greedy_sample_removal(
-        df, feature_cols, control_threshold, experimental_threshold, min_control_samples, batch_size
-    )
+    if enable_greedy_removal:
+        df = greedy_sample_removal(
+            df, feature_cols, control_threshold, experimental_threshold, min_control_samples, batch_size
+        )
+    else:
+        print("\n[Greedy Sample Removal] SKIPPED (Baseline Mode)")
 
     usable_features = get_usable_features(df, feature_cols, control_threshold, experimental_threshold)
 
@@ -298,25 +296,8 @@ def run_preprocessing(
     mice_max_iter: int = 10,
     random_state: int = 42,
     exclude_silver: bool = True,
+    enable_greedy_removal: bool = True,
 ) -> Tuple[pd.DataFrame, Dict]:
-    """
-    Run preprocessing pipeline
-
-    Parameters
-    input_path: Engineered Feature CSV path
-    output_path: Output CSV path
-    control_threshold: Control group missing rate threshold
-    experimental_threshold: Experimental group missing rate threshold
-    min_control_samples: Minimum Control sample count
-    batch_size: Greedy removal batch size
-    n_imputations: MICE multiple imputation count
-    mice_max_iter: MICE max iterations
-    random_state: Random seed
-    exclude_silver: Exclude silver cohort
-
-    Returns
-    Preprocessed DataFrame and processing info
-    """
     print("=" * 60)
     print("Preprocessing Pipeline")
     print("=" * 60)
@@ -340,6 +321,7 @@ def run_preprocessing(
         n_imputations=n_imputations,
         mice_max_iter=mice_max_iter,
         random_state=random_state,
+        enable_greedy_removal=enable_greedy_removal,
     )
     
     save_preprocessed_features(df, output_path, info.get("usable_features"))
